@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         mTaskListItems.add(new TextTaskListItem("name1", "description1"));
         mTaskListItems.add(new TextTaskListItem("name2", "description2"));
         mTaskListItems.add(new TextTaskListItem("name3", "description3"));
-        //mTaskListItems.add(new TextTaskListItem("name4", "description4"));
+        mTaskListItems.add(new TextTaskListItem("name4", "description4"));
         mTaskListItems.add(new ImgTaskListItem("img1", android.R.mipmap.sym_def_app_icon));
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
  * Created by t-yar on 17.04.2018.
  */
 
-public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ItemHolder> {
+public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final int TYPE_ITEM_TEXT = 0;
     private final int TYPE_ITEM_IMAGE = 1;
@@ -27,42 +27,44 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ItemHolder> 
     }
 
     @Override
-    public ItemsAdapter.ItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v;
 
         switch (viewType) {
             // инфлейтим нужную разметку в зависимости от того,
             // какой тип айтема нужен в данной позиции
 
-            case TYPE_ITEM_TEXT:
+            case TaskListItem.TYPE_ITEM_TEXT:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.text_task_list_item, parent, false);
-                break;
-            case TYPE_ITEM_IMAGE:
+                return new TextItemHolder(v);
+            case TaskListItem.TYPE_ITEM_IMAGE:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.img_task_list_item, parent, false);
-                break;
+                return new ImgItemHolder(v);
             default:
-                v = null;
-                break;
+                return null;
         }
-        return new ItemHolder(v);
     }
 
+
     @Override
-    public void onBindViewHolder(ItemsAdapter.ItemHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         // Получаем тип айтема в данной позиции для заполнения его данными
         TaskListItem taskListItem = mItems.get(position);
         int type = taskListItem.getType();
+
         switch (type) {
-            case TYPE_ITEM_TEXT:
+            case TaskListItem.TYPE_ITEM_TEXT:
                 //Выполняется приведение типа для вызова отличных методов
                 TextTaskListItem textTaskListItem = (TextTaskListItem)taskListItem;
-                holder.mName.setText(textTaskListItem.getName());
-                holder.mText.setText(textTaskListItem.getText());
+                TextItemHolder textItemHolder = (TextItemHolder) holder;
+                textItemHolder.mName.setText(textTaskListItem.getName());
+                textItemHolder.mText.setText(textTaskListItem.getText());
                 break;
-            case TYPE_ITEM_IMAGE:
+            case TaskListItem.TYPE_ITEM_IMAGE:
                 ImgTaskListItem imgTaskListItem = (ImgTaskListItem) taskListItem;
-                holder.mImgName.setText(imgTaskListItem.getName());
-                holder.mImage.setImageResource(imgTaskListItem.getImage());
+                ImgItemHolder imgItemHolder = (ImgItemHolder) holder;
+                imgItemHolder.mImgName.setText(imgTaskListItem.getName());
+                imgItemHolder.mImage.setImageResource(imgTaskListItem.getImage());
                 break;
         }
     }
@@ -70,28 +72,47 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ItemHolder> 
 
     @Override
     public int getItemCount() {
-        return mItems.size();
+        if (mItems != null) {
+            return mItems.size();
+        }
+        return 0;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mItems != null) {
+            TaskListItem taskListItem = mItems.get(position);
+            if (taskListItem != null) {
+                return taskListItem.getType();
+            }
+        }
+        return 0;
     }
 
 
-    class ItemHolder extends RecyclerView.ViewHolder{
+    public static class TextItemHolder extends RecyclerView.ViewHolder{
         //Текстовые поля
         TextView mName;
         TextView mText;
-        //Поля картиник
-        TextView mImgName;
-        ImageView mImage;
-        //Поля списка
 
-        public ItemHolder(View itemView) {
+        public TextItemHolder(View itemView) {
             super(itemView);
             //Текстовые поля
             mName = itemView.findViewById(R.id.name);
             mText = itemView.findViewById(R.id.text);
+        }
+    }
+
+    public  static class ImgItemHolder extends RecyclerView.ViewHolder{
+        //Поля картиники
+        TextView mImgName;
+        ImageView mImage;
+
+        public ImgItemHolder(View itemView) {
+            super(itemView);
             //Поля картинки
             mImgName = itemView.findViewById(R.id.imgName);
             mImage = itemView.findViewById(R.id.img);
-            //Поля списка
         }
     }
 }

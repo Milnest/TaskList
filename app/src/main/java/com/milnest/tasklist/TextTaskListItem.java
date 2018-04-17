@@ -9,7 +9,7 @@ public class TextTaskListItem extends TaskListItem {
     private String mText;
 
     public TextTaskListItem(String name, String text) {
-        super(name, TextTaskListItem.TYPE_ITEM_TEXT);
+        super(name, TaskListItem.TYPE_ITEM_TEXT);
         mText = text;
     }
 

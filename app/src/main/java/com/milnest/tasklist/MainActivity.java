@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
     public android.support.v7.view.ActionMode mActionMode;
     public android.support.v7.view.ActionMode.Callback mActionModeCallback;
+    private ItemsAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private void initRecyclerView() {
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         // создаем адаптер
-        ItemsAdapter adapter = new ItemsAdapter(mTaskListItems, this);
+        adapter = new ItemsAdapter(mTaskListItems, this);
         // устанавливаем для списка адаптер
         recyclerView.setAdapter(adapter);
         /*recyclerView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -86,19 +87,19 @@ public class MainActivity extends AppCompatActivity {
         //View init
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        initActionMode();
         initRecyclerView();
+        adapter.initActionMode();
         //Layout Manager init
         recyclerView.setLayoutManager(mLinearLayoutManager);
     }
 
-    private void initActionMode() {
+    /*private void initActionMode() {
         mActionModeCallback = new android.support.v7.view.ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(android.support.v7.view.ActionMode mode, Menu menu) {
                 MenuInflater inflater = mode.getMenuInflater();
                 inflater.inflate(R.menu.menu_context_task, menu);
-               /* menuInflater.inflate(R.menu.menu_context_task, menu);*/
+               *//* menuInflater.inflate(R.menu.menu_context_task, menu);*//*
                 return true;
             }
 
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onActionItemClicked(android.support.v7.view.ActionMode mode, MenuItem item) {
+                ItemsAdapter
                 return false;
             }
 
@@ -116,29 +118,6 @@ public class MainActivity extends AppCompatActivity {
             public void onDestroyActionMode(android.support.v7.view.ActionMode mode) {
                 mActionMode = null;
             }
-            /*@Override
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                *//*MenuInflater inflater = mode.getMenuInflater();*//*
-                *//*inflater.inflate(R.menu.menu_context_task, menu);*//*
-                menuInflater.inflate(R.menu.menu_context_task, menu);
-                return true;
-            }
-
-            @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                return false;
-            }
-
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                *//*recyclerView.removeView();*//*
-                return false;
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                mActionMode = null;
-            }*/
         };
-    }
+    }*/
 }

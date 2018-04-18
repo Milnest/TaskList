@@ -27,6 +27,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private List<TaskListItem> mItems;
     private LayoutInflater mInflater;
     private RecyclerView.ViewHolder tempViewHolder;
+    private int tempViewHolderPosition;
 
     //For activity
     /*private ActionMode mActionMode;
@@ -48,7 +49,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             case TaskListItem.TYPE_ITEM_TEXT:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.text_task_list_item, parent, false);
                 tempViewHolder = new TextItemHolder(v);
-                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
+                v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
                 return tempViewHolder;
             case TaskListItem.TYPE_ITEM_IMAGE:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.img_task_list_item, parent, false);
@@ -69,7 +70,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         switch (type) {
             case TaskListItem.TYPE_ITEM_TEXT:
                 //Выполняется приведение типа для вызова отличных методов
-                TextTaskListItem textTaskListItem = (TextTaskListItem)taskListItem;
+                TextTaskListItem textTaskListItem = (TextTaskListItem) taskListItem;
                 TextItemHolder textItemHolder = (TextItemHolder) holder;
                 textItemHolder.mName.setText(textTaskListItem.getName());
                 textItemHolder.mText.setText(textTaskListItem.getText());
@@ -109,7 +110,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
 
-    public static class TextItemHolder extends RecyclerView.ViewHolder{
+    public static class TextItemHolder extends RecyclerView.ViewHolder {
         //Текстовые поля
         TextView mName;
         TextView mText;
@@ -122,7 +123,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    public  static class ImgItemHolder extends RecyclerView.ViewHolder{
+    public static class ImgItemHolder extends RecyclerView.ViewHolder {
         //Поля картиники
         TextView mImgName;
         ImageView mImage;
@@ -135,7 +136,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    public class LongElementClickListener implements View.OnLongClickListener{
+    public class LongElementClickListener implements View.OnLongClickListener {
 
         RecyclerView.ViewHolder mViewHolder;
 
@@ -149,41 +150,44 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             if (activity.mActionMode == null) {
                 activity.mActionMode = activity.startSupportActionMode(activity.mActionModeCallback);
                 activity.mActionMode.setTitle("Action Mode");
-            }
-            else {
+            } else {
                 activity.mActionMode.finish();
             }
+            tempViewHolderPosition = mViewHolder.getAdapterPosition();
             return true;
             /*removeItem(mViewHolder.getAdapterPosition());
             return true;*/
         }
     }
 
-    /*private void initActionMode() {
-        mActionModeCallback = new ActionMode.Callback() {
+    public void initActionMode() {
+        final MainActivity activity = (MainActivity) mInflater.getContext();
+        activity.mActionModeCallback = new android.support.v7.view.ActionMode.Callback() {
             @Override
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            public boolean onCreateActionMode(android.support.v7.view.ActionMode mode, Menu menu) {
                 MenuInflater inflater = mode.getMenuInflater();
-                inflater.inflate(R.menu.my_menu_two, menu);
+                inflater.inflate(R.menu.menu_context_task, menu);
+               /* menuInflater.inflate(R.menu.menu_context_task, menu);*/
                 return true;
             }
 
             @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            public boolean onPrepareActionMode(android.support.v7.view.ActionMode mode, Menu menu) {
                 return false;
             }
 
             @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                recyclerView.removeView();
+            public boolean onActionItemClicked(android.support.v7.view.ActionMode mode, MenuItem item) {
+                removeItem(tempViewHolderPosition);
+                activity.mActionMode.finish();
                 return false;
             }
 
             @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                mActionMode = null;
+            public void onDestroyActionMode(android.support.v7.view.ActionMode mode) {
+                activity.mActionMode = null;
             }
+
         };
-    }*/
-
+    }
 }

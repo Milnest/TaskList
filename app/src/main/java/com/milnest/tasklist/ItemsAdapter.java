@@ -1,8 +1,14 @@
 package com.milnest.tasklist;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.Selection;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -20,6 +26,11 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private final int TYPE_ITEM_IMAGE = 1;
     private List<TaskListItem> mItems;
     private LayoutInflater mInflater;
+    private RecyclerView.ViewHolder tempViewHolder;
+
+    //For activity
+    /*private ActionMode mActionMode;
+    private ActionMode.Callback mActionModeCallback;*/
 
     public ItemsAdapter(List<TaskListItem> items, Context context) {
         mItems = items;
@@ -36,10 +47,14 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             case TaskListItem.TYPE_ITEM_TEXT:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.text_task_list_item, parent, false);
-                return new TextItemHolder(v);
+                tempViewHolder = new TextItemHolder(v);
+                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
+                return tempViewHolder;
             case TaskListItem.TYPE_ITEM_IMAGE:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.img_task_list_item, parent, false);
-                return new ImgItemHolder(v);
+                tempViewHolder = new ImgItemHolder(v);
+                v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
+                return tempViewHolder;
             default:
                 return null;
         }
@@ -51,7 +66,6 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         // Получаем тип айтема в данной позиции для заполнения его данными
         TaskListItem taskListItem = mItems.get(position);
         int type = taskListItem.getType();
-
         switch (type) {
             case TaskListItem.TYPE_ITEM_TEXT:
                 //Выполняется приведение типа для вызова отличных методов
@@ -89,6 +103,11 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return 0;
     }
 
+    void removeItem(int position) {
+        mItems.remove(position);
+        notifyItemRemoved(position);
+    }
+
 
     public static class TextItemHolder extends RecyclerView.ViewHolder{
         //Текстовые поля
@@ -115,4 +134,56 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             mImage = itemView.findViewById(R.id.img);
         }
     }
+
+    public class LongElementClickListener implements View.OnLongClickListener{
+
+        RecyclerView.ViewHolder mViewHolder;
+
+        public LongElementClickListener(RecyclerView.ViewHolder viewHolder) {
+            mViewHolder = viewHolder;
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            MainActivity activity = (MainActivity) mInflater.getContext();
+            if (activity.mActionMode == null) {
+                activity.mActionMode = activity.startSupportActionMode(activity.mActionModeCallback);
+                activity.mActionMode.setTitle("Action Mode");
+            }
+            else {
+                activity.mActionMode.finish();
+            }
+            return true;
+            /*removeItem(mViewHolder.getAdapterPosition());
+            return true;*/
+        }
+    }
+
+    /*private void initActionMode() {
+        mActionModeCallback = new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.my_menu_two, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                recyclerView.removeView();
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                mActionMode = null;
+            }
+        };
+    }*/
+
 }

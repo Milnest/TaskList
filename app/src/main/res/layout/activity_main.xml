@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
--->
-
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -20,13 +13,13 @@
         android:layout_height="?attr/actionBarSize"
         android:fitsSystemWindows="false">
 
-        <android.support.v7.widget.Toolbar
+        <include layout="@layout/toolbar" />
+        <!--<android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:layout_collapseMode="pin"
-            app:layout_scrollFlags="scroll" />
-
+            app:layout_scrollFlags="scroll" />-->
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -43,16 +36,8 @@
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layoutManager="LinearLayoutManager"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-
     </android.support.v4.widget.NestedScrollView>
-</android.support.design.widget.CoordinatorLayout>
 
-    <!--<android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        app:layoutManager="LinearLayoutManager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />-->
-<!--</LinearLayout>-->
+</android.support.design.widget.CoordinatorLayout>

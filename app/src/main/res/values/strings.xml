@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TaskList</string>
+    <string name="split">В 2 колонки</string>
+    <string name="delete">Удалить</string>
 </resources>

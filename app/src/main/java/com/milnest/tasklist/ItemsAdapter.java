@@ -2,6 +2,8 @@ package com.milnest.tasklist;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.text.Selection;
 import android.view.ActionMode;
@@ -14,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +30,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private List<TaskListItem> mItems;
     private LayoutInflater mInflater;
     private RecyclerView.ViewHolder tempViewHolder;
+    public List<RecyclerView.ViewHolder> mViewHolderList;
     private int tempViewHolderPosition;
+    boolean[] selects;
 
     //For activity
     /*private ActionMode mActionMode;
@@ -35,6 +40,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public ItemsAdapter(List<TaskListItem> items, Context context) {
         mItems = items;
+        selects = new boolean[items.size()];
+        mViewHolderList = new ArrayList<RecyclerView.ViewHolder>();
         mInflater = LayoutInflater.from(context);
     }
 
@@ -49,11 +56,13 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             case TaskListItem.TYPE_ITEM_TEXT:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.text_task_list_item, parent, false);
                 tempViewHolder = new TextItemHolder(v);
+                mViewHolderList.add(tempViewHolder);
                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
                 return tempViewHolder;
             case TaskListItem.TYPE_ITEM_IMAGE:
                 v = LayoutInflater.from(parent.getContext()).inflate(R.layout.img_task_list_item, parent, false);
                 tempViewHolder = new ImgItemHolder(v);
+                mViewHolderList.add(tempViewHolder);
                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
                 return tempViewHolder;
             default:
@@ -65,6 +74,17 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         // Получаем тип айтема в данной позиции для заполнения его данными
+        /*if(selects[position]) {
+            holder.itemView.setBackgroundColor(Color.LTGRAY);
+        }
+        else{
+            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        }*/
+        if(selects[position])
+            holder.itemView.setBackgroundResource(R.color.black);
+        else
+            holder.itemView.setBackgroundResource(R.color.colorAccent);
+
         TaskListItem taskListItem = mItems.get(position);
         int type = taskListItem.getType();
         switch (type) {
@@ -74,12 +94,26 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 TextItemHolder textItemHolder = (TextItemHolder) holder;
                 textItemHolder.mName.setText(textTaskListItem.getName());
                 textItemHolder.mText.setText(textTaskListItem.getText());
+                /*if(selects[position]) {
+                    textItemHolder.mName.setBackgroundColor(Color.BLACK);
+                    textItemHolder.mText.setBackgroundColor(Color.BLACK);
+                }
+                else{
+                    textItemHolder.mName.setBackgroundColor(Color.GREEN);
+                    textItemHolder.mText.setBackgroundColor(Color.GREEN);
+                }*/
                 break;
             case TaskListItem.TYPE_ITEM_IMAGE:
                 ImgTaskListItem imgTaskListItem = (ImgTaskListItem) taskListItem;
                 ImgItemHolder imgItemHolder = (ImgItemHolder) holder;
                 imgItemHolder.mImgName.setText(imgTaskListItem.getName());
                 imgItemHolder.mImage.setImageResource(imgTaskListItem.getImage());
+                /*if(selects[position]) {
+                    holder.itemView.setBackgroundColor(Color.LTGRAY);
+                }
+                else{
+                    holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+                }*/
                 break;
         }
     }
@@ -150,13 +184,33 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             if (activity.mActionMode == null) {
                 activity.mActionMode = activity.startSupportActionMode(activity.mActionModeCallback);
                 activity.mActionMode.setTitle("Action Mode");
+                tempViewHolderPosition = mViewHolder.getAdapterPosition();
+                //Добавление выделения при выборе
+                addSelection(mViewHolder);
             } else {
                 activity.mActionMode.finish();
+                //Сброс выделения
+                removeSelection();
             }
-            tempViewHolderPosition = mViewHolder.getAdapterPosition();
             return true;
             /*removeItem(mViewHolder.getAdapterPosition());
             return true;*/
+        }
+    }
+
+    private void addSelection(RecyclerView.ViewHolder viewHolder) {
+        viewHolder.itemView.setBackgroundResource(R.color.black);
+        selects[tempViewHolderPosition] = true;
+    }
+
+    private void removeSelection() {
+        for (boolean select:selects
+                ) {
+            select = false;
+        }
+        for (RecyclerView.ViewHolder viewHolder: mViewHolderList
+                ) {
+            viewHolder.itemView.setBackgroundResource(R.color.colorAccent);
         }
     }
 
@@ -185,6 +239,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             @Override
             public void onDestroyActionMode(android.support.v7.view.ActionMode mode) {
+                removeSelection();
                 activity.mActionMode = null;
             }
 

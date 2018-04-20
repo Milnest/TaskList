@@ -30,9 +30,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private List<TaskListItem> mItems;
     private LayoutInflater mInflater;
     private RecyclerView.ViewHolder tempViewHolder;
-    public List<RecyclerView.ViewHolder> mViewHolderList;
+    private List<RecyclerView.ViewHolder> mViewHolderList;
     private int tempViewHolderPosition;
-    boolean[] selects;
+    private boolean[] selects;
 
     //For activity
     /*private ActionMode mActionMode;

@@ -1,5 +1,9 @@
 package com.milnest.tasklist;
 
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.design.internal.NavigationMenu;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -11,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -18,7 +24,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<TaskListItem> mTaskListItems = new ArrayList<>();
+    private static List<TaskListItem> mTaskListItems = new ArrayList<>();
     private RecyclerView recyclerView;
     private Toolbar mToolbar;
     private GridLayoutManager mGridManager = new GridLayoutManager(this, 2);
@@ -26,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
     public android.support.v7.view.ActionMode mActionMode;
     public android.support.v7.view.ActionMode.Callback mActionModeCallback;
     private ItemsAdapter adapter;
+    private final int REQUEST_ACCESS_TYPE = 1;
+    public static final String NAME = "NAME";
+    public static final String TEXT = "TEXT";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,19 +69,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ItemsAdapter(mTaskListItems, this);
         // устанавливаем для списка адаптер
         recyclerView.setAdapter(adapter);
-        /*recyclerView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (mActionMode == null) {
-                    mActionMode = startActionMode(mActionModeCallback);
-                    mActionMode.setTitle("Action Mode");
-                }
-                else {
-                    mActionMode.finish();
-                }
-                return true;
-            }
-        });*/
     }
 
 
@@ -87,37 +83,43 @@ public class MainActivity extends AppCompatActivity {
         //View init
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
+
         initRecyclerView();
         adapter.initActionMode();
         //Layout Manager init
         recyclerView.setLayoutManager(mLinearLayoutManager);
     }
 
-    /*private void initActionMode() {
-        mActionModeCallback = new android.support.v7.view.ActionMode.Callback() {
-            @Override
-            public boolean onCreateActionMode(android.support.v7.view.ActionMode mode, Menu menu) {
-                MenuInflater inflater = mode.getMenuInflater();
-                inflater.inflate(R.menu.menu_context_task, menu);
-               *//* menuInflater.inflate(R.menu.menu_context_task, menu);*//*
-                return true;
-            }
+    public void OnClick(View view){
+        switch (view.getId()){
+            case R.id.add_task_text:
+                Intent textIntent = new Intent(this, TextTaskActivity.class);
+                startActivityForResult(textIntent, REQUEST_ACCESS_TYPE);
+                break;
+            case R.id.add_task_photo:
+                break;
+            case R.id.add_task_list:
+                break;
+        }
+    }
 
-            @Override
-            public boolean onPrepareActionMode(android.support.v7.view.ActionMode mode, Menu menu) {
-                return false;
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode==REQUEST_ACCESS_TYPE){
+            if(resultCode==RESULT_OK){
+                Bundle extras = data.getExtras();
+                if(extras != null){
+                    String name = data.getStringExtra(NAME);
+                    String text = data.getStringExtra(TEXT);
+                    adapter.notifyDataSetChanged();
+                    mTaskListItems.add(new TextTaskListItem(name, text));
+                }
             }
-
-            @Override
-            public boolean onActionItemClicked(android.support.v7.view.ActionMode mode, MenuItem item) {
-                ItemsAdapter
-                return false;
+            else{
+                Toast.makeText(this, R.string.save_canceled, Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void onDestroyActionMode(android.support.v7.view.ActionMode mode) {
-                mActionMode = null;
-            }
-        };
-    }*/
+        }
+        else{
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 }

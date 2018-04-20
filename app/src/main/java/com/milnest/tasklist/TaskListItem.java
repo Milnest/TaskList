@@ -10,6 +10,15 @@ public class TaskListItem {
     public static final int TYPE_ITEM_LIST = 2;
     private String mName;
     private int mType;
+    private boolean isSelected;
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+    }
 
     public TaskListItem(String name, int type) {
         mName = name;

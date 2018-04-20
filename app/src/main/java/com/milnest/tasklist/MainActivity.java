@@ -1,24 +1,25 @@
 package com.milnest.tasklist;
 
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.design.internal.NavigationMenu;
-import android.support.design.widget.BottomNavigationView;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.ActionMode;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +33,13 @@ public class MainActivity extends AppCompatActivity {
     public android.support.v7.view.ActionMode mActionMode;
     public android.support.v7.view.ActionMode.Callback mActionModeCallback;
     private ItemsAdapter adapter;
-    private final int REQUEST_ACCESS_TYPE = 1;
+    private AlertDialog.Builder builder;
+    private final int TEXT_RESULT = 1;
     public static final String NAME = "NAME";
     public static final String TEXT = "TEXT";
+    private static final int CAMERA_RESULT = 2;
+    private static final int GALLERY_RESULT = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +67,30 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+
+    /*@Override
+    public boolean onContextItemSelected(MenuItem item)
+    {
+        CharSequence message;
+        switch (item.getItemId())
+        {
+            case R.id.new_photo:
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, CAMERA_RESULT);
+                break;
+            case R.id.open_gallery:
+
+                break;
+            default:
+                return super.onContextItemSelected(item);
+        }
+        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+        return true;
+    }*/
+
+
     /**Инициализирует Recycler*/
     private void initRecyclerView() {
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -79,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         mTaskListItems.add(new TextTaskListItem("name2", "description2"));
         mTaskListItems.add(new TextTaskListItem("name3", "description3"));
         //mTaskListItems.add(new TextTaskListItem("name4", "description4"));
-        mTaskListItems.add(new ImgTaskListItem("img1", android.R.mipmap.sym_def_app_icon));
+        mTaskListItems.add(new ImgTaskListItem("img1", BitmapFactory.decodeResource(getResources(), android.R.mipmap.sym_def_app_icon)));
         //View init
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -88,15 +117,45 @@ public class MainActivity extends AppCompatActivity {
         adapter.initActionMode();
         //Layout Manager init
         recyclerView.setLayoutManager(mLinearLayoutManager);
+
+        initPhotoDialog();
+
+    }
+
+    private void initPhotoDialog() {
+        builder = new AlertDialog.Builder(this);
+        builder.setTitle("Добавление фото")
+                .setMessage("Выберите источник")
+                .setPositiveButton("Сделать новое", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        startActivityForResult(cameraIntent, CAMERA_RESULT);
+                    }
+                })
+                .setNegativeButton("Взять из галереи", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Вызываем стандартную галерею для выбора изображения с помощью Intent.ACTION_PICK:
+                        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                        //Тип получаемых объектов - image:
+                        photoPickerIntent.setType("image/*");
+                        //Запускаем переход с ожиданием обратного результата в виде информации об изображении:
+                        startActivityForResult(photoPickerIntent, GALLERY_RESULT);
+
+                    }
+                });
+        builder.create();
     }
 
     public void OnClick(View view){
         switch (view.getId()){
             case R.id.add_task_text:
                 Intent textIntent = new Intent(this, TextTaskActivity.class);
-                startActivityForResult(textIntent, REQUEST_ACCESS_TYPE);
+                startActivityForResult(textIntent, TEXT_RESULT);
                 break;
             case R.id.add_task_photo:
+                builder.show();
+                /*Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, CAMERA_RESULT);*/
                 break;
             case R.id.add_task_list:
                 break;
@@ -104,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode==REQUEST_ACCESS_TYPE){
+        /*if(requestCode== TEXT_RESULT){
             if(resultCode==RESULT_OK){
                 Bundle extras = data.getExtras();
                 if(extras != null){
@@ -120,6 +179,56 @@ public class MainActivity extends AppCompatActivity {
         }
         else{
             super.onActivityResult(requestCode, resultCode, data);
+        }*/
+        switch (requestCode){
+            case TEXT_RESULT:
+                if(resultCode==RESULT_OK){
+                    Bundle extras = data.getExtras();
+                    if(extras != null){
+                        String name = data.getStringExtra(NAME);
+                        String text = data.getStringExtra(TEXT);
+                        adapter.notifyDataSetChanged();
+                        mTaskListItems.add(new TextTaskListItem(name, text));
+                    }
+                }
+                else{
+                    Toast.makeText(this, R.string.save_canceled, Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case CAMERA_RESULT:
+                try {
+                    /*Uri imgUri = data.getData();
+                    BitmapFactory.decodeFile(imgUri.getPath()); */
+                    Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
+                    adapter.notifyDataSetChanged();
+                    mTaskListItems.add(new ImgTaskListItem("image", thumbnail));
+                }
+                catch (NullPointerException ex){
+                    Toast.makeText(this, "Фото не сделано", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case GALLERY_RESULT:
+                Uri imageUri;
+                InputStream imageStream;
+                try {
+                    imageUri = data.getData();
+                    imageStream = getContentResolver().openInputStream(imageUri);
+                    Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    adapter.notifyDataSetChanged();
+                    mTaskListItems.add(new ImgTaskListItem("image", selectedImage));
+                }
+                catch (FileNotFoundException  e) {
+                    Toast.makeText(this, "Изображение не получено",
+                            Toast.LENGTH_SHORT).show();
+                }
+                catch (NullPointerException ex){
+                    Toast.makeText(this, "Изображение не получено",
+                            Toast.LENGTH_SHORT).show();
+                }
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
         }
     }
+
 }

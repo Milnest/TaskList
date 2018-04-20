@@ -2,8 +2,10 @@ package com.milnest.tasklist;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.Selection;
 import android.view.ActionMode;
@@ -32,7 +34,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private RecyclerView.ViewHolder tempViewHolder;
     private List<RecyclerView.ViewHolder> mViewHolderList;
     private int tempViewHolderPosition;
-    private boolean[] selects;
+    //private boolean[] selects;
 
     //For activity
     /*private ActionMode mActionMode;
@@ -40,7 +42,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public ItemsAdapter(List<TaskListItem> items, Context context) {
         mItems = items;
-        selects = new boolean[items.size()];
+        //selects = new boolean[items.size()];
         mViewHolderList = new ArrayList<RecyclerView.ViewHolder>();
         mInflater = LayoutInflater.from(context);
     }
@@ -54,16 +56,20 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             // какой тип айтема нужен в данной позиции
 
             case TaskListItem.TYPE_ITEM_TEXT:
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.text_task_list_item, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.text_task_list_item,
+                        parent, false);
                 tempViewHolder = new TextItemHolder(v);
                 mViewHolderList.add(tempViewHolder);
                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
+                /*v.setOnClickListener(new ElementClickListener(tempViewHolder));*/
                 return tempViewHolder;
             case TaskListItem.TYPE_ITEM_IMAGE:
-                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.img_task_list_item, parent, false);
+                v = LayoutInflater.from(parent.getContext()).inflate(R.layout.img_task_list_item,
+                        parent, false);
                 tempViewHolder = new ImgItemHolder(v);
                 mViewHolderList.add(tempViewHolder);
                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
+                v.setOnClickListener(new ElementClickListener(tempViewHolder));
                 return tempViewHolder;
             default:
                 return null;
@@ -80,12 +86,12 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         else{
             holder.itemView.setBackgroundColor(Color.TRANSPARENT);
         }*/
-        if(selects[position])
+
+        TaskListItem taskListItem = mItems.get(position);
+        if(taskListItem.isSelected())
             holder.itemView.setBackgroundResource(R.color.black);
         else
             holder.itemView.setBackgroundResource(R.color.colorAccent);
-
-        TaskListItem taskListItem = mItems.get(position);
         int type = taskListItem.getType();
         switch (type) {
             case TaskListItem.TYPE_ITEM_TEXT:
@@ -107,7 +113,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 ImgTaskListItem imgTaskListItem = (ImgTaskListItem) taskListItem;
                 ImgItemHolder imgItemHolder = (ImgItemHolder) holder;
                 imgItemHolder.mImgName.setText(imgTaskListItem.getName());
-                imgItemHolder.mImage.setImageResource(imgTaskListItem.getImage());
+                //imgItemHolder.mImage.setImageResource(imgTaskListItem.getImage());
+                imgItemHolder.mImage.setImageBitmap(imgTaskListItem.getImage());
                 /*if(selects[position]) {
                     holder.itemView.setBackgroundColor(Color.LTGRAY);
                 }
@@ -196,17 +203,40 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             /*removeItem(mViewHolder.getAdapterPosition());
             return true;*/
         }
+
+
+    }
+
+    public class ElementClickListener implements View.OnClickListener{
+        RecyclerView.ViewHolder mViewHolder;
+
+        public ElementClickListener(RecyclerView.ViewHolder viewHolder) {
+            mViewHolder = viewHolder;
+        }
+
+        @Override
+        public void onClick(View v) {
+            /*MainActivity activity = (MainActivity) mInflater.getContext();
+            ImgItemHolder imgItemHolder = (ImgItemHolder) mViewHolder;
+            ImgTaskListItem item = (ImgTaskListItem) mItems.get(imgItemHolder.getAdapterPosition());
+            item.getImage();*/
+        }
     }
 
     private void addSelection(RecyclerView.ViewHolder viewHolder) {
         viewHolder.itemView.setBackgroundResource(R.color.black);
-        selects[tempViewHolderPosition] = true;
+        //selects[tempViewHolderPosition] = true;
+        mItems.get(tempViewHolderPosition).setSelected(true);
     }
 
     private void removeSelection() {
-        for (boolean select:selects
+        /*for (boolean select:selects
                 ) {
             select = false;
+        }*/
+        for (TaskListItem item:mItems
+             ) {
+            item.setSelected(false);
         }
         for (RecyclerView.ViewHolder viewHolder: mViewHolderList
                 ) {

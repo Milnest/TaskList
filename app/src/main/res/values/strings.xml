@@ -8,4 +8,9 @@
     <string name="task_title_hint">Название</string>
     <string name="task_content_hint">Текст</string>
     <string name="save_canceled">Данные не сохранены</string>
+    <string name="save">Сохранить</string>
+    <string name="text_translate">Перевести</string>
+    <string name="share">Поделиться</string>
+    <string name="new_photo">Сделать новое</string>
+    <string name="open_gallery">Взять из галереи</string>
 </resources>

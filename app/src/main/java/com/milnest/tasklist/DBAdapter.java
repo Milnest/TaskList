@@ -63,7 +63,7 @@ public class DBAdapter {
 
         }catch (SQLException e)
         {
-            Toast.makeText(c, "Ошибка добавления!", Toast.LENGTH_SHORT).show();;
+            Toast.makeText(c, "Ошибка добавления!", Toast.LENGTH_SHORT).show();
         }
 
         return 0;
@@ -95,7 +95,7 @@ public class DBAdapter {
 
         }catch (SQLException e)
         {
-            e.printStackTrace();
+            Toast.makeText(c, "Ошибка добавления!", Toast.LENGTH_SHORT).show();
         }
 
         return 0;

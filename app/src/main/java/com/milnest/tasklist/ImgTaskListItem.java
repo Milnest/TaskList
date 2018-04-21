@@ -10,8 +10,8 @@ public class ImgTaskListItem extends TaskListItem {
     //private int mImage;
     private Bitmap mImage;
 
-    public ImgTaskListItem(String name, Bitmap image) {
-        super(name, TaskListItem.TYPE_ITEM_IMAGE);
+    public ImgTaskListItem(int id, String name, Bitmap image) {
+        super(id, name, TaskListItem.TYPE_ITEM_IMAGE);
         mImage = image;
     }
 

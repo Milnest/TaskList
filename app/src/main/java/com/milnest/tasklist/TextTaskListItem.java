@@ -8,8 +8,8 @@ public class TextTaskListItem extends TaskListItem {
 
     private String mText;
 
-    public TextTaskListItem(String name, String text) {
-        super(name, TaskListItem.TYPE_ITEM_TEXT);
+    public TextTaskListItem(int id, String name, String text) {
+        super(id, name, TaskListItem.TYPE_ITEM_TEXT);
         mText = text;
     }
 

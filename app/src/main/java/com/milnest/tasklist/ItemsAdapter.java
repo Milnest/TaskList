@@ -146,8 +146,10 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     void removeItem(int position) {
-        mItems.remove(position);
-        notifyItemRemoved(position);
+        MainActivity activity = (MainActivity) mInflater.getContext();
+        activity.delete(position);
+        /*mItems.remove(position);
+        notifyItemRemoved(position);*/
     }
 
 

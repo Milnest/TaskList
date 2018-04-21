@@ -8,6 +8,7 @@ public class TaskListItem {
     public static final int TYPE_ITEM_TEXT = 0;
     public static final int TYPE_ITEM_IMAGE = 1;
     public static final int TYPE_ITEM_LIST = 2;
+    private int mId;
     private String mName;
     private int mType;
     private boolean isSelected;
@@ -20,9 +21,22 @@ public class TaskListItem {
         isSelected = selected;
     }
 
-    public TaskListItem(String name, int type) {
+    /*public TaskListItem(String name, int type) {
         mName = name;
         mType = type;
+    }*/
+    public TaskListItem(int id, String name, int type) {
+        mName = name;
+        mType = type;
+        mId = id;
+    }
+
+    public int getId() {
+        return mId;
+    }
+
+    public void setId(int id) {
+        this.mId = id;
     }
 
     public String getName() {

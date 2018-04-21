@@ -105,12 +105,12 @@ public class MainActivity extends AppCompatActivity {
     /**Заполняет Recycler тестовыми данными и инициализирует View*/
     private void setInitialData() {
         //Recycler data
-        mTaskListItems.add(new TextTaskListItem("name1", "description1"));
+        /*mTaskListItems.add(new TextTaskListItem("name1", "description1"));
         mTaskListItems.add(new TextTaskListItem("name2", "description2"));
         mTaskListItems.add(new TextTaskListItem("name3", "description3"));
-        //mTaskListItems.add(new TextTaskListItem("name4", "description4"));
+        mTaskListItems.add(new TextTaskListItem("name4", "description4"));
         mTaskListItems.add(new ImgTaskListItem("img1", BitmapFactory.decodeResource(
-                getResources(), android.R.mipmap.sym_def_app_icon)));
+                getResources(), android.R.mipmap.sym_def_app_icon)));*/
         //View init
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -189,8 +189,9 @@ public class MainActivity extends AppCompatActivity {
                     if(extras != null){
                         String name = data.getStringExtra(NAME);
                         String text = data.getStringExtra(TEXT);
-                        adapter.notifyDataSetChanged();
-                        mTaskListItems.add(new TextTaskListItem(name, text));
+                        save(name, ItemsAdapter.TYPE_ITEM_TEXT, text);
+                        /*adapter.notifyDataSetChanged();
+                        mTaskListItems.add(new TextTaskListItem(name, text));*/
                     }
                 }
                 else{
@@ -202,8 +203,9 @@ public class MainActivity extends AppCompatActivity {
                     /*Uri imgUri = data.getData();
                     BitmapFactory.decodeFile(imgUri.getPath()); */
                     Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-                    adapter.notifyDataSetChanged();
-                    mTaskListItems.add(new ImgTaskListItem("image", thumbnail));
+                    //TODO cохранение картинки
+                    /*adapter.notifyDataSetChanged();
+                    mTaskListItems.add(new ImgTaskListItem("image", thumbnail));*/
                 }
                 catch (NullPointerException ex){
                     Toast.makeText(this, "Фото не сделано", Toast.LENGTH_SHORT).show();
@@ -216,8 +218,9 @@ public class MainActivity extends AppCompatActivity {
                     imageUri = data.getData();
                     imageStream = getContentResolver().openInputStream(imageUri);
                     Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                    adapter.notifyDataSetChanged();
-                    mTaskListItems.add(new ImgTaskListItem("image", selectedImage));
+                    //TODO cохранение картинки
+                    /*adapter.notifyDataSetChanged();
+                    mTaskListItems.add(new ImgTaskListItem("image", selectedImage));*/
                 }
                 catch (FileNotFoundException  e) {
                     Toast.makeText(this, "Изображение не получено",
@@ -235,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**Работвет с БД
      * */
-    private void retrieve()
+    public void retrieve()
     {
         DBAdapter db=new DBAdapter(this);
 
@@ -256,7 +259,8 @@ public class MainActivity extends AppCompatActivity {
             String content = c.getString(3);
 
             //CREATE PLAYER
-            TaskListItem taskListItem = new TextTaskListItem(name, content);
+            TaskListItem taskListItem = new TextTaskListItem(id, name, content);
+            //TODO картинка
             //Player p=new Player(name,pos,id);
 
             //ADD TO PLAYERS
@@ -269,6 +273,58 @@ public class MainActivity extends AppCompatActivity {
         {
             rv.setAdapter(adapter);
         }*/
+
+    }
+
+    public void save(String name, int type, String content)
+    {
+        DBAdapter db=new DBAdapter(this);
+
+        //OPEN
+        db.openDB();
+
+        //INSERT
+        long result=db.add(name, type, content);
+
+        if(result>0)
+        {
+            Toast.makeText(this, "Задача добавлена!", Toast.LENGTH_SHORT).show();
+        }else
+        {
+            Toast.makeText(this, "Ошибка добавления!", Toast.LENGTH_SHORT).show();
+        }
+
+        //CLOSE
+        db.close();
+
+        //refresh
+        retrieve();
+
+    }
+
+    public void delete(int id)
+    {
+        DBAdapter db=new DBAdapter(this);
+
+        //OPEN
+        db.openDB();
+
+        //INSERT
+        long result=db.Delete(id);
+
+        if(result>0)
+        {
+            Toast.makeText(this, "Задача успешно удалена!", Toast.LENGTH_SHORT).show();
+        }else
+        {
+            Toast.makeText(this, "Ошибка удаления!", Toast.LENGTH_SHORT).show();
+        }
+
+        //CLOSE
+        db.close();
+
+        //refresh
+        retrieve();
 
     }
 

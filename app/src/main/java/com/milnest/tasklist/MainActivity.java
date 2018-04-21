@@ -2,6 +2,7 @@ package com.milnest.tasklist;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -108,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
         mTaskListItems.add(new TextTaskListItem("name2", "description2"));
         mTaskListItems.add(new TextTaskListItem("name3", "description3"));
         //mTaskListItems.add(new TextTaskListItem("name4", "description4"));
-        mTaskListItems.add(new ImgTaskListItem("img1", BitmapFactory.decodeResource(getResources(), android.R.mipmap.sym_def_app_icon)));
+        mTaskListItems.add(new ImgTaskListItem("img1", BitmapFactory.decodeResource(
+                getResources(), android.R.mipmap.sym_def_app_icon)));
         //View init
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -231,4 +233,48 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**Работвет с БД
+     * */
+    private void retrieve()
+    {
+        DBAdapter db=new DBAdapter(this);
+
+        //OPEN
+        db.openDB();
+
+        mTaskListItems.clear();
+
+        //SELECT
+        Cursor c=db.getAllTasks();
+
+        //LOOP THRU THE DATA ADDING TO ARRAYLIST
+        while (c.moveToNext())
+        {
+            int id = c.getInt(0);
+            String name = c.getString(1);
+            int type = c.getInt(2);
+            String content = c.getString(3);
+
+            //CREATE PLAYER
+            TaskListItem taskListItem = new TextTaskListItem(name, content);
+            //Player p=new Player(name,pos,id);
+
+            //ADD TO PLAYERS
+            adapter.notifyDataSetChanged();
+            mTaskListItems.add(taskListItem);
+        }
+
+        //SET ADAPTER TO RV
+        /*if(!(mTaskListItems.size()<1))
+        {
+            rv.setAdapter(adapter);
+        }*/
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        retrieve();
+    }
 }

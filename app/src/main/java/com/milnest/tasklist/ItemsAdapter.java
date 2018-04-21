@@ -27,8 +27,8 @@ import java.util.List;
 
 public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final int TYPE_ITEM_TEXT = 0;
-    private final int TYPE_ITEM_IMAGE = 1;
+    public static final int TYPE_ITEM_TEXT = 0;
+    public static final int TYPE_ITEM_IMAGE = 1;
     private List<TaskListItem> mItems;
     private LayoutInflater mInflater;
     private RecyclerView.ViewHolder tempViewHolder;

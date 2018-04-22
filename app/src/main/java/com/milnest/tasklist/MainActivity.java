@@ -1,5 +1,6 @@
 package com.milnest.tasklist;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,18 +11,22 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -50,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String ID = "ID";
     private static final int CAMERA_RESULT = 2;
     private static final int GALLERY_RESULT = 3;
+    private MenuItem searchItem;
+    private SearchView searchView;
+    private AlertDialog dialog;
     //private int edit_id = -1;
 
     @Override
@@ -62,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView)menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        initSearch();
         return true;
     }
 
@@ -75,9 +87,11 @@ public class MainActivity extends AppCompatActivity {
                     recyclerView.setLayoutManager(mLinearLayoutManager);
                 }
                 break;
+            case R.id.action_search:
         }
         return true;
     }
+
 
     /**Инициализирует Recycler*/
     private void initRecyclerView() {
@@ -99,9 +113,24 @@ public class MainActivity extends AppCompatActivity {
         adapter.initActionMode();
         //Layout Manager init
         recyclerView.setLayoutManager(mLinearLayoutManager);
-
         initPhotoDialog();
+    }
 
+    private void initSearch() {
+        /*searchItem = findViewById(R.id.action_search);
+        searchView = (SearchView) searchItem.getActionView();*/
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
 
     private void initPhotoDialog() {
@@ -127,7 +156,8 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-        builder.create();
+        dialog = builder.create();
+
     }
 
     public void OnClick(View view){
@@ -137,7 +167,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(textIntent, TEXT_RESULT);
                 break;
             case R.id.add_task_photo:
-                builder.show();
+                dialog = builder.show();
+                Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                positiveButton.setTextColor(getResources().getColor(R.color.lum_red));
+                Button negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+                negativeButton.setTextColor(getResources().getColor(R.color.lum_red));
                 /*Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 startActivityForResult(cameraIntent, CAMERA_RESULT);*/
                 break;

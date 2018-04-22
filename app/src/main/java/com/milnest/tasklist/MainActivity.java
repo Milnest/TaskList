@@ -1,12 +1,15 @@
 package com.milnest.tasklist;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,32 +17,40 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static List<TaskListItem> mTaskListItems = new ArrayList<>();
+    public static List<TaskListItem> mTaskListItems = new ArrayList<>();
     private RecyclerView recyclerView;
     private Toolbar mToolbar;
     private GridLayoutManager mGridManager = new GridLayoutManager(this, 2);
     private LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
     public android.support.v7.view.ActionMode mActionMode;
     public android.support.v7.view.ActionMode.Callback mActionModeCallback;
-    private ItemsAdapter adapter;
+    public ItemsAdapter adapter;
     private AlertDialog.Builder builder;
-    private final int TEXT_RESULT = 1;
+    public static final int TEXT_RESULT = 1;
     public static final String NAME = "NAME";
     public static final String TEXT = "TEXT";
+    public static final String ID = "ID";
     private static final int CAMERA_RESULT = 2;
     private static final int GALLERY_RESULT = 3;
+    //private int edit_id = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,30 +79,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
-    /*@Override
-    public boolean onContextItemSelected(MenuItem item)
-    {
-        CharSequence message;
-        switch (item.getItemId())
-        {
-            case R.id.new_photo:
-                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_RESULT);
-                break;
-            case R.id.open_gallery:
-
-                break;
-            default:
-                return super.onContextItemSelected(item);
-        }
-        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
-        return true;
-    }*/
-
-
     /**Инициализирует Recycler*/
     private void initRecyclerView() {
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -104,17 +91,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**Заполняет Recycler тестовыми данными и инициализирует View*/
     private void setInitialData() {
-        //Recycler data
-        /*mTaskListItems.add(new TextTaskListItem("name1", "description1"));
-        mTaskListItems.add(new TextTaskListItem("name2", "description2"));
-        mTaskListItems.add(new TextTaskListItem("name3", "description3"));
-        mTaskListItems.add(new TextTaskListItem("name4", "description4"));
-        mTaskListItems.add(new ImgTaskListItem("img1", BitmapFactory.decodeResource(
-                getResources(), android.R.mipmap.sym_def_app_icon)));*/
         //View init
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-
+        //Recycler data
         initRecyclerView();
         adapter.initActionMode();
         //Layout Manager init
@@ -136,11 +116,13 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Взять из галереи", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //Вызываем стандартную галерею для выбора изображения с помощью Intent.ACTION_PICK:
+                        //Вызываем стандартную галерею для выбора изображения с помощью
+                        // Intent.ACTION_PICK:
                         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                         //Тип получаемых объектов - image:
                         photoPickerIntent.setType("image/*");
-                        //Запускаем переход с ожиданием обратного результата в виде информации об изображении:
+                        //Запускаем переход с ожиданием обратного результата в виде информации
+                        // об изображении:
                         startActivityForResult(photoPickerIntent, GALLERY_RESULT);
 
                     }
@@ -165,23 +147,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data){
-        /*if(requestCode== TEXT_RESULT){
-            if(resultCode==RESULT_OK){
-                Bundle extras = data.getExtras();
-                if(extras != null){
-                    String name = data.getStringExtra(NAME);
-                    String text = data.getStringExtra(TEXT);
-                    adapter.notifyDataSetChanged();
-                    mTaskListItems.add(new TextTaskListItem(name, text));
-                }
-            }
-            else{
-                Toast.makeText(this, R.string.save_canceled, Toast.LENGTH_SHORT).show();
-            }
-        }
-        else{
-            super.onActivityResult(requestCode, resultCode, data);
-        }*/
         switch (requestCode){
             case TEXT_RESULT:
                 if(resultCode==RESULT_OK){
@@ -189,9 +154,13 @@ public class MainActivity extends AppCompatActivity {
                     if(extras != null){
                         String name = data.getStringExtra(NAME);
                         String text = data.getStringExtra(TEXT);
+                        int get_id = data.getIntExtra(ID, -1);
+                        if(get_id != -1){
+                            edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT, text);
+                        }
+                        else {
                         save(name, ItemsAdapter.TYPE_ITEM_TEXT, text);
-                        /*adapter.notifyDataSetChanged();
-                        mTaskListItems.add(new TextTaskListItem(name, text));*/
+                        }
                     }
                 }
                 else{
@@ -200,12 +169,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case CAMERA_RESULT:
                 try {
-                    /*Uri imgUri = data.getData();
-                    BitmapFactory.decodeFile(imgUri.getPath()); */
                     Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-                    //TODO cохранение картинки
-                    /*adapter.notifyDataSetChanged();
-                    mTaskListItems.add(new ImgTaskListItem("image", thumbnail));*/
+                    String imageString = bitmapToBase64(thumbnail);
+                    save("1", ItemsAdapter.TYPE_ITEM_IMAGE, imageString);
                 }
                 catch (NullPointerException ex){
                     Toast.makeText(this, "Фото не сделано", Toast.LENGTH_SHORT).show();
@@ -218,9 +184,8 @@ public class MainActivity extends AppCompatActivity {
                     imageUri = data.getData();
                     imageStream = getContentResolver().openInputStream(imageUri);
                     Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                    //TODO cохранение картинки
-                    /*adapter.notifyDataSetChanged();
-                    mTaskListItems.add(new ImgTaskListItem("image", selectedImage));*/
+                    String imgString = bitmapToBase64(selectedImage);
+                    save("1", ItemsAdapter.TYPE_ITEM_IMAGE, imgString);
                 }
                 catch (FileNotFoundException  e) {
                     Toast.makeText(this, "Изображение не получено",
@@ -230,10 +195,18 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Изображение не получено",
                             Toast.LENGTH_SHORT).show();
                 }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+    }
+
+    private String bitmapToBase64(Bitmap selectedImage) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        selectedImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        String imgString = Base64.encodeToString(stream.toByteArray(),Base64.DEFAULT);
+        return  imgString;
     }
 
     /**Работвет с БД
@@ -258,21 +231,27 @@ public class MainActivity extends AppCompatActivity {
             int type = c.getInt(2);
             String content = c.getString(3);
 
-            //CREATE PLAYER
-            TaskListItem taskListItem = new TextTaskListItem(id, name, content);
-            //TODO картинка
-            //Player p=new Player(name,pos,id);
-
-            //ADD TO PLAYERS
+            //TaskListItem taskListItem;
+            //CREATE TASK
             adapter.notifyDataSetChanged();
-            mTaskListItems.add(taskListItem);
-        }
+            switch (type){
+                case ItemsAdapter.TYPE_ITEM_TEXT:
+                    mTaskListItems.add(new TextTaskListItem(id, name, content));
+                    break;
+                case ItemsAdapter.TYPE_ITEM_IMAGE:
+                    try {
+                        byte[] bytes = Base64.decode(content, Base64.DEFAULT);
+                        mTaskListItems.add(new ImgTaskListItem(id, name, BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
+                                /*BitmapFactory.decodeStream(getContentResolver().openInputStream(Uri.parse(content)))));*/
+                    }
+                    catch(Exception ex){
+                        Toast.makeText(this, "Не сохранено", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
 
-        //SET ADAPTER TO RV
-        /*if(!(mTaskListItems.size()<1))
-        {
-            rv.setAdapter(adapter);
-        }*/
+            }
+
+        }
 
     }
 
@@ -328,9 +307,61 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public String[] getById(int id)
+    {
+
+        DBAdapter db = new DBAdapter(this);
+        db.openDB();
+
+        //SELECT
+        Cursor c=db.getAllTasks();
+        String name = "";
+        String content = "";
+
+        //LOOP THRU THE DATA ADDING TO ARRAYLIST
+        while (c.moveToNext()) {
+            int get_id = c.getInt(0);
+            if(get_id == id) {
+            name = c.getString(1);
+            //int type = c.getInt(2);
+            content = c.getString(3);
+            }
+        }
+        db.close();
+
+        return new String[]{name, content};
+    }
+
+    public void edit(int id, String name, int type, String content)
+    {
+        DBAdapter db=new DBAdapter(this);
+
+        //OPEN
+        db.openDB();
+
+        //INSERT
+        long result = db.UPDATE(id, name, type, content);
+
+        if(result>0)
+        {
+            Toast.makeText(this,"Задача изменена!", Toast.LENGTH_SHORT).show();
+        }else
+        {
+            Toast.makeText(this,"Ошибка изменения!", Toast.LENGTH_SHORT).show();
+        }
+
+        //CLOSE
+        db.close();
+
+        //refresh
+        retrieve();
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         retrieve();
     }
+
 }

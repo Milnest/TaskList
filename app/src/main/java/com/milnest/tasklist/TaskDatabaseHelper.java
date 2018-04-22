@@ -32,8 +32,8 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
                 + " TEXT, " + COLUMN_TYPE + " INTEGER, "+ COLUMN_CONTENT
                 + " TEXT);");
 
-        db.execSQL("INSERT INTO "+ TABLE +" (" + COLUMN_NAME
-                + ", " + COLUMN_TYPE  + ", " + COLUMN_CONTENT + ") VALUES ('Task1', " + TYPE_ITEM_TEXT + ", 'task_content');");
+        db.execSQL("INSERT INTO "+ TABLE +" (" + COLUMN_ID + ", " + COLUMN_NAME
+                + ", " + COLUMN_TYPE  + ", " + COLUMN_CONTENT + ") VALUES (0,'Task1', " + TYPE_ITEM_TEXT + ", 'task_content');");
     }
 
     @Override

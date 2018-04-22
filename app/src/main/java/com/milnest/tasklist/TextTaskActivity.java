@@ -25,11 +25,30 @@ public class TextTaskActivity extends AppCompatActivity {
     private String text;
     Toolbar mToolbar;
     private final String TAG = "TextTaskActivity";
+    private Integer mId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_task);
         setInitialData();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            //int id = extras.getInt("id");
+            String[] data = extras.getStringArray("data");
+            //Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
+            /*DBMethodsAdapter adapter = new DBMethodsAdapter();
+            String[] dataById = adapter.getById(this, id);
+            taskTitle.setText(dataById[0]);
+            taskText.setText(dataById[1]);*/
+            taskTitle.setText(data[0]);
+            taskText.setText(data[1]);
+            mId = extras.getInt("id");
+        }
     }
 
     private void setInitialData() {
@@ -92,6 +111,9 @@ public class TextTaskActivity extends AppCompatActivity {
         getText();
         data.putExtra(MainActivity.NAME, title);
         data.putExtra(MainActivity.TEXT, text);
+        if (mId != null){
+            data.putExtra(MainActivity.ID, mId);
+        }
         setResult(RESULT_OK, data);
     }
 

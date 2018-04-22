@@ -79,6 +79,15 @@ public class DBAdapter {
                 null, null,null);
     }
 
+    public Cursor getTaskById(int id){
+        String[] columns={TaskDatabaseHelper.COLUMN_ID, TaskDatabaseHelper.COLUMN_NAME,
+                TaskDatabaseHelper.COLUMN_TYPE, TaskDatabaseHelper.COLUMN_CONTENT};
+            /*return db.rawQuery("select * from " + TaskDatabaseHelper.TABLE + " WHERE " +
+                    TaskDatabaseHelper.COLUMN_ID + "= " + id, null);*/
+        return db.query(TaskDatabaseHelper.TABLE, columns, TaskDatabaseHelper.COLUMN_ID +
+                "=" + id, null, null, null, null);
+    }
+
     //UPDATE
     public long UPDATE(int id, String name, int type, String content)
     {

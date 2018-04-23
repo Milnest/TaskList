@@ -66,7 +66,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 tempViewHolder = new ImgItemHolder(v);
                 mViewHolderList.add(tempViewHolder);
                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
-                v.setOnClickListener(new ElementClickListener(tempViewHolder));
+                //v.setOnClickListener(new ElementClickListener(tempViewHolder));
                 return tempViewHolder;
             default:
                 return null;
@@ -78,6 +78,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         // Получаем тип айтема в данной позиции для заполнения его данными
         TaskListItem taskListItem = mItems.get(position);
+        //Снимаем выделение
         if(taskListItem.isSelected())
             holder.itemView.setBackgroundResource(R.color.black);
         else
@@ -120,6 +121,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return 0;
     }
 
+    //Удаляет задачу по позиции
     void removeItem(int position) {
         MainActivity activity = (MainActivity) mInflater.getContext();
         activity.delete(position);
@@ -164,7 +166,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         public boolean onLongClick(View v) {
             MainActivity activity = (MainActivity) mInflater.getContext();
             if (activity.mActionMode == null) {
-                activity.mActionMode = activity.startSupportActionMode(activity.mActionModeCallback);
+                activity.mActionMode = activity.startSupportActionMode(
+                        activity.mActionModeCallback);
                 activity.mActionMode.setTitle("Action Mode");
                 tempViewHolderPosition = mViewHolder.getAdapterPosition();
                 //Добавление выделения при выборе
@@ -192,17 +195,20 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             MainActivity activity = (MainActivity) mInflater.getContext();
             Intent textIntentChange =  new Intent(activity, TextTaskActivity.class);
             tempViewHolderPosition = mViewHolder.getAdapterPosition();
-            textIntentChange.putExtra("data", activity.getById(mItems.get(tempViewHolderPosition).getId()));
+            textIntentChange.putExtra("data", activity.getById(
+                    mItems.get(tempViewHolderPosition).getId()));
             textIntentChange.putExtra("id", mItems.get(tempViewHolderPosition).getId());
             activity.startActivityForResult(textIntentChange, MainActivity.TEXT_RESULT);
         }
     }
 
+    //Выделяет задачу
     private void addSelection(RecyclerView.ViewHolder viewHolder) {
         viewHolder.itemView.setBackgroundResource(R.color.black);
         mItems.get(tempViewHolderPosition).setSelected(true);
     }
 
+    //Снимает выделение задачи
     private void removeSelection() {
         for (TaskListItem item:mItems
              ) {
@@ -230,7 +236,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             }
 
             @Override
-            public boolean onActionItemClicked(android.support.v7.view.ActionMode mode, MenuItem item) {
+            public boolean onActionItemClicked(android.support.v7.view.ActionMode mode,
+                                               MenuItem item) {
                 removeItem(mItems.get(tempViewHolderPosition).getId());
                 activity.mActionMode.finish();
                 return false;

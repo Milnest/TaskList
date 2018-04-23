@@ -16,7 +16,7 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_TYPE = "type";
-    public static final String COLUMN_CONTENT = "year";
+    public static final String COLUMN_CONTENT = "content";
     public static final int TYPE_ITEM_TEXT = 0;
     public static final int TYPE_ITEM_IMAGE = 1;
 
@@ -33,7 +33,8 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
                 + " TEXT);");
 
         db.execSQL("INSERT INTO "+ TABLE +" (" + COLUMN_ID + ", " + COLUMN_NAME
-                + ", " + COLUMN_TYPE  + ", " + COLUMN_CONTENT + ") VALUES (0,'Task1', " + TYPE_ITEM_TEXT + ", 'task_content');");
+                + ", " + COLUMN_TYPE  + ", " + COLUMN_CONTENT + ") VALUES (0,'Task1', " +
+                TYPE_ITEM_TEXT + ", 'task_content');");
     }
 
     @Override

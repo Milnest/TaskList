@@ -8,6 +8,10 @@ import android.widget.Toast;
  * Created by t-yar on 22.04.2018.
  */
 
+/**Класс для обобщения работы с базой данных
+ * Пока не используется
+ * TODO перенести функциональность DBAdapter-а в Helper, а функции для БД из main activity - сюда.
+ * */
 public class DBMethodsAdapter {
     public void save(String name, int type, String content, Context context)
     {

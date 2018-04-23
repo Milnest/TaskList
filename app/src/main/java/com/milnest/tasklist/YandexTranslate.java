@@ -12,14 +12,12 @@ import javax.net.ssl.HttpsURLConnection;
  * Created by t-yar on 20.04.2018.
  */
 
+/**Класс для перевода текстовой задачи с русского на английский язык
+ * */
 public class YandexTranslate {
-        //private static int i = 0;
-        /*public static void main(String[] args) throws IOException {
-            System.out.println(translate("ru", args[0]));
-        }*/
         /**Переводит текст.
-         * transDirection - направление перевода в формате ru-en (c русского на английский)
-         * input - текст перевода
+         * @transDirection - направление перевода в формате ru-en (c русского на английский)
+         * @input - текст перевода
          * */
         public static String translate(String transDirection, String input) throws IOException {
             String urlStr = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=" +

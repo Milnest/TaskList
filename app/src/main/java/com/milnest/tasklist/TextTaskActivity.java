@@ -17,6 +17,8 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**Класс текстовой задачи
+ * */
 public class TextTaskActivity extends AppCompatActivity {
 
     EditText taskTitle;
@@ -38,13 +40,7 @@ public class TextTaskActivity extends AppCompatActivity {
         super.onResume();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            //int id = extras.getInt("id");
             String[] data = extras.getStringArray("data");
-            //Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
-            /*DBMethodsAdapter adapter = new DBMethodsAdapter();
-            String[] dataById = adapter.getById(this, id);
-            taskTitle.setText(dataById[0]);
-            taskText.setText(dataById[1]);*/
             taskTitle.setText(data[0]);
             taskText.setText(data[1]);
             mId = extras.getInt("id");
@@ -89,23 +85,15 @@ public class TextTaskActivity extends AppCompatActivity {
         return true;
     }
 
+    /**Запускает метод в другом потоке для выполнения перевода
+     * */
     private void translation() {
         getText();
         new AsyncRequest().execute();
-        /*try {
-            taskTitle.setText(YandexTranslate.translate("ru-en", title));
-            taskText.setText(YandexTranslate.translate("ru-en", text));
-            Toast.makeText(this, "Перевод завершён!", Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(this, "Ошибка перевода!", Toast.LENGTH_SHORT).show();
-        }*/
     }
 
-    /*private void getTaskData() {
-        title = taskTitle.getText().toString();
-        text = taskText.getText().toString();
-    }*/
-
+    /**Сохраняет данные в Intent
+     * */
     private void saveText() {
         Intent data = new Intent();
         getText();
@@ -122,6 +110,8 @@ public class TextTaskActivity extends AppCompatActivity {
         text = taskText.getText().toString();
     }
 
+    /**Выполняет перевод данной текстовой задачи с русского на английский язык
+     * */
     class AsyncRequest extends AsyncTask<Void, Void, String[]> {
 
         @Override

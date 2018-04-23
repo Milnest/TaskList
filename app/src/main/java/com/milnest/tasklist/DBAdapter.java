@@ -69,7 +69,7 @@ public class DBAdapter {
         return 0;
     }
 
-    //RETRIEVE ALL PLAYERS
+    //RETRIEVE ALL TASKS
     public Cursor getAllTasks()
     {
         String[] columns={TaskDatabaseHelper.COLUMN_ID, TaskDatabaseHelper.COLUMN_NAME,
@@ -124,6 +124,22 @@ public class DBAdapter {
         }
 
         return 0;
+    }
+
+    public Cursor Search(String data)
+    {
+        String[] columns={TaskDatabaseHelper.COLUMN_ID, TaskDatabaseHelper.COLUMN_NAME,
+                TaskDatabaseHelper.COLUMN_TYPE, TaskDatabaseHelper.COLUMN_CONTENT};
+
+        return db.rawQuery("select * from task_table where name = ? OR content = ?", new String[]{data, data});
+    }
+
+    public Cursor SearchDynamic(String data)
+    {
+        String[] columns={TaskDatabaseHelper.COLUMN_ID, TaskDatabaseHelper.COLUMN_NAME,
+                TaskDatabaseHelper.COLUMN_TYPE, TaskDatabaseHelper.COLUMN_CONTENT};
+
+        return db.rawQuery("select * from task_table where name LIKE ? OR content = LIKE ?", new String[]{data, data});
     }
 
 }

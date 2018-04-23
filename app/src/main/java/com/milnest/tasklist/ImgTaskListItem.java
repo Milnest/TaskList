@@ -5,7 +5,8 @@ import android.graphics.Bitmap;
 /**
  * Created by t-yar on 17.04.2018.
  */
-
+/**Класс задачи-картинки
+ * */
 public class ImgTaskListItem extends TaskListItem {
     //private int mImage;
     private Bitmap mImage;

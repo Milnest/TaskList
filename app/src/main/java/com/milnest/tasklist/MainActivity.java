@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String ID = "ID";
     private static final int CAMERA_RESULT = 2;
     private static final int GALLERY_RESULT = 3;
-    private MenuItem searchItem;
     private SearchView searchView;
     private AlertDialog dialog;
     //private int edit_id = -1;
@@ -81,13 +81,16 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_split:
-                if (recyclerView.getLayoutManager() == mLinearLayoutManager)
-                recyclerView.setLayoutManager(mGridManager);
+                if (recyclerView.getLayoutManager() == mLinearLayoutManager) {
+                    recyclerView.setLayoutManager(mGridManager);
+                    item.setIcon(R.drawable.ic_linear_split);
+                }
                 else {
                     recyclerView.setLayoutManager(mLinearLayoutManager);
+                    item.setIcon(R.drawable.ic_tasks_column_split);
                 }
                 break;
-            case R.id.action_search:
+            /*case R.id.action_search:*/
         }
         return true;
     }
@@ -114,25 +117,41 @@ public class MainActivity extends AppCompatActivity {
         //Layout Manager init
         recyclerView.setLayoutManager(mLinearLayoutManager);
         initPhotoDialog();
+
     }
 
     private void initSearch() {
-        /*searchItem = findViewById(R.id.action_search);
-        searchView = (SearchView) searchItem.getActionView();*/
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-
-                return false;
+                if (query != null) {
+                    search(query);
+                    return true;
+                }
+                else{
+                    retrieve();
+                    return true;
+                }
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                return false;
+                searchDynamic(newText);
+                return true;
             }
         });
+
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                retrieve();
+            }
+        });
+
     }
 
+    /**Отображает диалог выбора места получения изображеемя
+     * */
     private void initPhotoDialog() {
         builder = new AlertDialog.Builder(this);
         builder.setTitle("Добавление фото")
@@ -167,13 +186,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(textIntent, TEXT_RESULT);
                 break;
             case R.id.add_task_photo:
+                //Применяем стили для кнопок диалога
                 dialog = builder.show();
                 Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
                 positiveButton.setTextColor(getResources().getColor(R.color.lum_red));
                 Button negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
                 negativeButton.setTextColor(getResources().getColor(R.color.lum_red));
-                /*Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_RESULT);*/
                 break;
             case R.id.add_task_list:
                 break;
@@ -219,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                     imageStream = getContentResolver().openInputStream(imageUri);
                     Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                     String imgString = bitmapToBase64(selectedImage);
-                    save("1", ItemsAdapter.TYPE_ITEM_IMAGE, imgString);
+                    save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString);
                 }
                 catch (FileNotFoundException  e) {
                     Toast.makeText(this, "Изображение не получено",
@@ -229,6 +247,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Изображение не получено",
                             Toast.LENGTH_SHORT).show();
                 }
+                catch (SQLException exc){
+                    Toast.makeText(this, "Некорректное изображение",
+                            Toast.LENGTH_SHORT).show();
+                }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
@@ -236,14 +258,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Преобразует картинку в Base64 для хранения в БД
     private String bitmapToBase64(Bitmap selectedImage) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        selectedImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        selectedImage.compress(Bitmap.CompressFormat.PNG, 1, stream);
         String imgString = Base64.encodeToString(stream.toByteArray(),Base64.DEFAULT);
         return  imgString;
     }
 
-    /**Работвет с БД
+    /**Обновляет список задач
      * */
     public void retrieve()
     {
@@ -257,38 +280,41 @@ public class MainActivity extends AppCompatActivity {
         //SELECT
         Cursor c=db.getAllTasks();
 
-        //LOOP THRU THE DATA ADDING TO ARRAYLIST
-        while (c.moveToNext())
-        {
-            int id = c.getInt(0);
-            String name = c.getString(1);
-            int type = c.getInt(2);
-            String content = c.getString(3);
-
-            //TaskListItem taskListItem;
-            //CREATE TASK
-            adapter.notifyDataSetChanged();
-            switch (type){
-                case ItemsAdapter.TYPE_ITEM_TEXT:
-                    mTaskListItems.add(new TextTaskListItem(id, name, content));
-                    break;
-                case ItemsAdapter.TYPE_ITEM_IMAGE:
-                    try {
-                        byte[] bytes = Base64.decode(content, Base64.DEFAULT);
-                        mTaskListItems.add(new ImgTaskListItem(id, name, BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
-                                /*BitmapFactory.decodeStream(getContentResolver().openInputStream(Uri.parse(content)))));*/
-                    }
-                    catch(Exception ex){
-                        Toast.makeText(this, "Не сохранено", Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-
-            }
-
-        }
+        //DATA ADDING TO ARRAYLIST
+        showItems(c);
 
     }
 
+    /**Отображает список задач, согласно текущим условиям(в том числе и для поиска)
+     * */
+    private void showItems(Cursor c) {
+            while (c.moveToNext()) {
+                int id = c.getInt(0);
+                String name = c.getString(1);
+                int type = c.getInt(2);
+                String content = c.getString(3);
+
+                //TaskListItem taskListItem;
+                //CREATE TASK
+                adapter.notifyDataSetChanged();
+                switch (type) {
+                    case ItemsAdapter.TYPE_ITEM_TEXT:
+                        mTaskListItems.add(new TextTaskListItem(id, name, content));
+                        break;
+                    case ItemsAdapter.TYPE_ITEM_IMAGE:
+                        byte[] bytes = Base64.decode(content, Base64.DEFAULT);
+                        mTaskListItems.add(new ImgTaskListItem(id, name,
+                                BitmapFactory.decodeByteArray(bytes, 0, bytes.length)));
+                        break;
+
+                }
+
+            }
+    }
+
+
+    /**Сохраняет новую задачу
+     * */
     public void save(String name, int type, String content)
     {
         DBAdapter db=new DBAdapter(this);
@@ -315,6 +341,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**Удаляет значение по id
+     * */
     public void delete(int id)
     {
         DBAdapter db=new DBAdapter(this);
@@ -341,6 +369,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**Выполняет получение значения по id
+     * */
     public String[] getById(int id)
     {
 
@@ -366,6 +396,8 @@ public class MainActivity extends AppCompatActivity {
         return new String[]{name, content};
     }
 
+    /**Осуществляет редактирование значения по id
+     * */
     public void edit(int id, String name, int type, String content)
     {
         DBAdapter db=new DBAdapter(this);
@@ -390,6 +422,28 @@ public class MainActivity extends AppCompatActivity {
         //refresh
         retrieve();
 
+    }
+
+    /**Осуществляет простой поиск из строки прямым сравнением значений
+     * */
+    public void search(String textToSearch){
+        DBAdapter db=new DBAdapter(this);
+        db.openDB();
+        mTaskListItems.clear();
+        Cursor c = db.Search(textToSearch);
+        showItems(c);
+        db.close();
+    }
+
+    /**Осуществляет динамический поиск из строки
+     * */
+    public void searchDynamic(String textToSearch){
+        DBAdapter db=new DBAdapter(this);
+        db.openDB();
+        mTaskListItems.clear();
+        Cursor c = db.Search(textToSearch);
+        showItems(c);
+        db.close();
     }
 
     @Override

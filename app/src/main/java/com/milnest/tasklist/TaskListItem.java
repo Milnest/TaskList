@@ -4,6 +4,8 @@ package com.milnest.tasklist;
  * Created by t-yar on 17.04.2018.
  */
 
+/**Общий класс задач для списка
+ * */
 public class TaskListItem {
     public static final int TYPE_ITEM_TEXT = 0;
     public static final int TYPE_ITEM_IMAGE = 1;

@@ -13,4 +13,5 @@
     <string name="share">Поделиться</string>
     <string name="new_photo">Сделать новое</string>
     <string name="open_gallery">Взять из галереи</string>
+    <string name="new_cb">+ Новый пункт</string>
 </resources>

@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -109,6 +110,7 @@ public class TextTaskActivity extends AppCompatActivity {
         title = taskTitle.getText().toString();
         text = taskText.getText().toString();
     }
+
 
     /**Выполняет перевод данной текстовой задачи с русского на английский язык
      * */

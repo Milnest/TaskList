@@ -3,10 +3,13 @@ package com.milnest.tasklist;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.text.Selection;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -15,9 +18,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +37,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public static final int TYPE_ITEM_TEXT = 0;
     public static final int TYPE_ITEM_IMAGE = 1;
-    private List<TaskListItem> mItems;
+    public static final int TYPE_ITEM_LIST = 2;
+    private /*static*/ List<TaskListItem> mItems;
     private LayoutInflater mInflater;
     private RecyclerView.ViewHolder tempViewHolder;
     private List<RecyclerView.ViewHolder> mViewHolderList;
@@ -68,6 +76,11 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 v.setOnLongClickListener(new LongElementClickListener(tempViewHolder));
                 //v.setOnClickListener(new ElementClickListener(tempViewHolder));
                 return tempViewHolder;
+            case TaskListItem.TYPE_ITEM_LIST:
+                v = LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.list_of_checkboxes_task_list_item, parent, false);
+                tempViewHolder = new CheckboxListItemHolder(v);
+                return tempViewHolder;
             default:
                 return null;
         }
@@ -77,6 +90,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         // Получаем тип айтема в данной позиции для заполнения его данными
+        tempViewHolderPosition = holder.getAdapterPosition();
         TaskListItem taskListItem = mItems.get(position);
         //Снимаем выделение
         if(taskListItem.isSelected())
@@ -98,6 +112,22 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 imgItemHolder.mImgName.setText(imgTaskListItem.getName());
                 imgItemHolder.mImage.setImageBitmap(imgTaskListItem.getImage());
                 break;
+            case TaskListItem.TYPE_ITEM_LIST:
+                ListOfCheckboxesTaskListItem listOfCbTaskListItem =
+                        (ListOfCheckboxesTaskListItem) taskListItem;
+                //CheckboxTaskListItem cbTaskListItem = (CheckboxTaskListItem) taskListItem;
+                CheckboxListItemHolder cbListItemHolder = (CheckboxListItemHolder) holder;
+                int curInd = 0;
+                for (CheckBox cbItem: cbListItemHolder.mCheckBoxList
+                     ) {
+                    cbItem.setText(listOfCbTaskListItem.getCbList().get(curInd).getCbText());
+                    cbItem.setChecked(listOfCbTaskListItem.getCbList().get(curInd).isCbState());
+                    curInd++;
+                }
+                /*GsonBuilder builder = new GsonBuilder();
+                Gson gson = builder.create();
+                gson.toJson(cbListItemHolder.mCheckBoxList);
+                gson.fromJson(new String(), cbListItemHolder.mCheckBoxList.getClass());*/
         }
     }
 
@@ -151,6 +181,30 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             //Поля картинки
             mImgName = itemView.findViewById(R.id.imgName);
             mImage = itemView.findViewById(R.id.img);
+        }
+    }
+
+    public class CheckboxListItemHolder extends RecyclerView.ViewHolder {
+        //Поля картиники
+        List<CheckBox> mCheckBoxList = new ArrayList<>();
+        public CheckboxListItemHolder(View itemView) {
+            super(itemView);
+            LinearLayout cbListLayout = (LinearLayout)itemView.findViewById(R.id.layout_to_add);
+            //mItems.get(getAdapterPosition()).getId();
+            ListOfCheckboxesTaskListItem cbList = (ListOfCheckboxesTaskListItem)(mItems.get(tempViewHolderPosition + 1));
+            for (CheckboxTaskListItem item: cbList.getCbList()
+                 ) {
+                CheckBox cb = new CheckBox(cbListLayout.getContext());
+                cb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.
+                        LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                cbListLayout.addView(cb);
+                /*cb.setText(item.getCbText());
+                cb.setChecked(item.isCbState());*/
+                mCheckBoxList.add(cb);
+                int states[][] = {{android.R.attr.state_checked}, {}};
+                int colors[] = {R.color.black, R.color.gray};
+                CompoundButtonCompat.setButtonTintList(cb, new ColorStateList(states, colors));
+            }
         }
     }
 

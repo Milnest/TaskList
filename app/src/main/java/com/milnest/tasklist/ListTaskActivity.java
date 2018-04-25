@@ -38,6 +38,27 @@ public class ListTaskActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        /*if (extras != null) {
+            String[] data = extras.getStringArray("data");
+            mListData = data[1];
+            ListOfCheckboxesTaskListItem cbList = JsonAdapter.fromJson(mListData);
+            mId = extras.getInt("id");
+            for (CheckboxTaskListItem item: cbList.getCbList()
+                    ) {
+                CheckBox cb = new CheckBox(this);
+                cb.setText(item.getCbText());
+                cb.setChecked(item.isCbState());
+                addCb(cb);
+            }
+        }*/
+    }
+
+    private void setInitialData() {
+        newCheckbox = (TextView) findViewById(R.id.new_cb);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        addListTaskLayout = (LinearLayout)findViewById(R.id.add_list_task_layout);
+        mCheckBoxList = new ArrayList<>();
         extras = getIntent().getExtras();
         if (extras != null) {
             String[] data = extras.getStringArray("data");
@@ -52,15 +73,7 @@ public class ListTaskActivity extends AppCompatActivity {
                 addCb(cb);
             }
         }
-    }
-
-    private void setInitialData() {
-        newCheckbox = (TextView) findViewById(R.id.new_cb);
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
-        addListTaskLayout = (LinearLayout)findViewById(R.id.add_list_task_layout);
-        mCheckBoxList = new ArrayList<>();
-        if (extras == null){
+        else{
             CheckBox startCb = new CheckBox(this);
             addCb(startCb);
         }

@@ -8,9 +8,22 @@ import com.google.gson.GsonBuilder;
  */
 
 public class JsonAdapter {
+    private static GsonBuilder builder = new GsonBuilder();
+    private static Gson gson = builder.create();
+
+    /*private static void initGson() {
+        builder = new GsonBuilder();
+        gson = builder.create();
+    }*/
+
     public static String toJson(ListOfCheckboxesTaskListItem listItem) {
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
+        /*initGson();*/
         return gson.toJson(listItem);
+    }
+
+
+    public static ListOfCheckboxesTaskListItem  fromJson(String jsonString){
+        /*initGson();*/
+        return gson.fromJson(jsonString, ListOfCheckboxesTaskListItem.class);
     }
 }

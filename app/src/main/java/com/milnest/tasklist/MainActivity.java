@@ -9,39 +9,26 @@ import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
+import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -62,10 +49,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int TEXT_RESULT = 1;
     private static final int CAMERA_RESULT = 2;
     private static final int GALLERY_RESULT = 3;
-    private static final int LIST_RESULT = 4;
+    public static final int LIST_RESULT = 4;
     private SearchView searchView;
     private AlertDialog dialog;
-    //private int edit_id = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,26 +110,6 @@ public class MainActivity extends AppCompatActivity {
         //Layout Manager init
         recyclerView.setLayoutManager(mLinearLayoutManager);
         initPhotoDialog();
-        /*GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();*/
-
-        List<CheckboxTaskListItem> cbList = new ArrayList<>();
-        cbList.add(new CheckboxTaskListItem("текст", true));
-        cbList.add(new CheckboxTaskListItem("текст", false));
-        /*mTaskListItems.add(new ListOfCheckboxesTaskListItem(1, "name",
-                ItemsAdapter.TYPE_ITEM_LIST, cbList));*/
-
-        /*List<CheckboxTaskListItem> cbList1 = new ArrayList<>();
-        cbList1.add(new CheckboxTaskListItem("текст", true));
-        cbList1.add(new CheckboxTaskListItem("текст", true));*/
-        /*mTaskListItems.add(new ListOfCheckboxesTaskListItem(2, "name",
-                ItemsAdapter.TYPE_ITEM_LIST, cbList1));*/
-
-        /*String jsonString = JsonAdapter.toJson(new ListOfCheckboxesTaskListItem(1, "name",
-                ItemsAdapter.TYPE_ITEM_LIST, cbList));*/
-        /*gson.toJson(new ListOfCheckboxesTaskListItem(1, "name",
-                ItemsAdapter.TYPE_ITEM_LIST, cbList));*/
-        /*save("first_list", TaskListItem.TYPE_ITEM_LIST, jsonString);*/
     }
 
     private void initSearch() {
@@ -285,16 +251,17 @@ public class MainActivity extends AppCompatActivity {
                     Bundle extras = data.getExtras();
                     if(extras != null){
                         String text = data.getStringExtra(LIST);
-                        /*int get_id = data.getIntExtra(ID, -1);
+                        int get_id = data.getIntExtra(ID, -1);
                         if(get_id != -1){
-                            edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT, text);
+                            edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text);
                         }
-                        else {*/
+                        else {
                             save("", ItemsAdapter.TYPE_ITEM_LIST, text);
-                        //}
+                        }
 
                     }
                 }
+                break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
@@ -326,28 +293,20 @@ public class MainActivity extends AppCompatActivity {
         //DATA ADDING TO ARRAYLIST
         showItems(c);
 
+        db.close();
+
     }
 
     /**Отображает список задач, согласно текущим условиям(в том числе и для поиска)
      * */
     private void showItems(Cursor c) {
-        /*int zatychka = 0;*/
+        adapter.notifyDataSetChanged();
             while (c.moveToNext()) {
                 int id = c.getInt(0);
-
-                /*ЭТО ЗАТЫЧКА! УБРАТЬ!*/
-
-                /*zatychka=id;*/
-
-                /*ЭТО ЗАТЫЧКА! УБРАТЬ!*/
-
                 String name = c.getString(1);
                 int type = c.getInt(2);
                 String content = c.getString(3);
 
-                //TaskListItem taskListItem;
-                //CREATE TASK
-                adapter.notifyDataSetChanged();
                 switch (type) {
                     case ItemsAdapter.TYPE_ITEM_TEXT:
                         mTaskListItems.add(new TextTaskListItem(id, name, content));
@@ -363,24 +322,19 @@ public class MainActivity extends AppCompatActivity {
                         cbList.add(new CheckboxTaskListItem("текст", true));
                         cbList.add(new CheckboxTaskListItem("текст", false));
                         mTaskListItems.add(new ListOfCheckboxesTaskListItem(id, name, type, cbList));*/
-                        GsonBuilder builder = new GsonBuilder();
-                        Gson gson = builder.create();
+
+                        /*GsonBuilder builder = new GsonBuilder();
+                        Gson gson = builder.create();*/
+
                         //gson.fromJson(new String(content), ListOfCheckboxesTaskListItem.class);
-                        mTaskListItems.add(gson.fromJson(new String(content), ListOfCheckboxesTaskListItem.class));
+
+                        /*mTaskListItems.add(gson.fromJson(new String(content), ListOfCheckboxesTaskListItem.class));*/
+                        ListOfCheckboxesTaskListItem cbList = JsonAdapter.fromJson(content);
+                        cbList.setId(id);
+                        mTaskListItems.add(cbList);
+                        break;
                 }
             }
-            //ЗАТЫЧКА!
-        /*List<CheckboxTaskListItem> cbList = new ArrayList<>();
-        cbList.add(new CheckboxTaskListItem("текст", true));
-        cbList.add(new CheckboxTaskListItem("текст", false));
-        mTaskListItems.add(new ListOfCheckboxesTaskListItem(zatychka, "name",
-                ItemsAdapter.TYPE_ITEM_LIST, cbList));
-
-        List<CheckboxTaskListItem> cbList1 = new ArrayList<>();
-        cbList1.add(new CheckboxTaskListItem("текст", true));
-        cbList1.add(new CheckboxTaskListItem("текст", true));
-        mTaskListItems.add(new ListOfCheckboxesTaskListItem(zatychka, "name",
-                ItemsAdapter.TYPE_ITEM_LIST, cbList1));*/
     }
 
 
@@ -482,7 +436,8 @@ public class MainActivity extends AppCompatActivity {
         if(result>0)
         {
             Toast.makeText(this,"Задача изменена!", Toast.LENGTH_SHORT).show();
-        }else
+        }
+        else
         {
             Toast.makeText(this,"Ошибка изменения!", Toast.LENGTH_SHORT).show();
         }

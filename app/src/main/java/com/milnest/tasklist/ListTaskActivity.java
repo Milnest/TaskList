@@ -1,19 +1,15 @@
 package com.milnest.tasklist;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Layout;
 import android.util.Pair;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -57,12 +53,7 @@ public class ListTaskActivity extends AppCompatActivity {
             mId = extras.getInt("id");
             for (CheckboxTaskListItem item: cbList.getCbList()
                     ) {
-                /*CheckBox cb = new CheckBox(this);
-                cb.setText(item.getCbText());
-                cb.setChecked(item.isCbState());
-                addCb(cb);*/
                 CheckBox cb = new CheckBox(this);
-                //cb.setText(item.getCbText());
                 cb.setChecked(item.isCbState());
                 EditText cbText = new EditText(this);
                 cbText.setText(item.getCbText());
@@ -70,8 +61,6 @@ public class ListTaskActivity extends AppCompatActivity {
             }
         }
         else{
-            /*CheckBox startCb = new CheckBox(this);
-            addCb(startCb);*/
             CheckBox startCb = new CheckBox(this);
             EditText addedCbText = new EditText(this);
             addCb(startCb, addedCbText);
@@ -95,8 +84,6 @@ public class ListTaskActivity extends AppCompatActivity {
     public void OnClick(View view) {
         switch (view.getId()){
             case R.id.new_cb:
-                /*CheckBox addedCb = new CheckBox(this);
-                addCb(addedCb);*/
                 CheckBox addedCb = new CheckBox(this);
                 EditText addedCbText = new EditText(this);
                 addCb(addedCb, addedCbText);
@@ -104,23 +91,21 @@ public class ListTaskActivity extends AppCompatActivity {
     }
 
     private void addCb(final CheckBox cbToAdd, EditText cbTextToAdd) {
-        //cbToAdd.setHint("add text here");
         ChangeCbColor.change(cbToAdd);
         cbToAdd.setLayoutParams(new LinearLayout.LayoutParams( LinearLayout.LayoutParams.
-                WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT/*, 0.2f*/));
+                WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         final LinearLayout innerLayout = new LinearLayout(this);
         innerLayout.setOrientation(LinearLayout.HORIZONTAL);
         innerLayout.addView(cbToAdd);
         cbTextToAdd.setHint(R.string.new_text);
-        cbTextToAdd.setLayoutParams(new LinearLayout.LayoutParams( 0/*LinearLayout.LayoutParams.
-                WRAP_CONTENT*/, LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
+        cbTextToAdd.setLayoutParams(new LinearLayout.LayoutParams( 0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f));
         innerLayout.addView(cbTextToAdd);
         TextView delTextView = new TextView(this);
         delTextView.setText("X");
         delTextView.setTextColor(getResources().getColor(R.color.lum_red));
-        delTextView.setLayoutParams(new LinearLayout.LayoutParams( 0/*LinearLayout.LayoutParams.
-                WRAP_CONTENT*/, LinearLayout.LayoutParams.WRAP_CONTENT, 0.3f));
-        //mCheckBoxList.add(cbToAdd);
+        delTextView.setLayoutParams(new LinearLayout.LayoutParams( 0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 0.3f));
         final Pair cbAndText = new Pair<CheckBox, EditText>(cbToAdd, cbTextToAdd);
         mCheckBoxList.add(cbAndText);
         addListTaskLayout.addView(innerLayout);

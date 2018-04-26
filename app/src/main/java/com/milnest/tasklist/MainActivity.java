@@ -410,6 +410,7 @@ public class MainActivity extends AppCompatActivity {
         //LOOP THRU THE DATA ADDING TO ARRAYLIST
         while (c.moveToNext()) {
             int get_id = c.getInt(0);
+            //TODO перекодить, забирая значения из БД напрямую!
             if(get_id == id) {
             name = c.getString(1);
             //int type = c.getInt(2);

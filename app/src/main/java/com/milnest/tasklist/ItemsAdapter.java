@@ -2,8 +2,6 @@ package com.milnest.tasklist;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,8 +10,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CheckedTextView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -116,14 +112,11 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 //Заполнить ViewHolder новыми элементами.
                 for (CheckboxTaskListItem item: listOfCbTaskListItem.getCbList()
                         ) {
-                    //CheckBox cb = new CheckBox(layout.getContext());
                     CheckBox cb = new CheckBox(layout.getContext());
-                    //cb.setText(item.getCbText());
                     cb.setChecked(item.isCbState());
                     cb.setClickable(false);
                     cb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.
                             LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    //EditText cbText = new EditText(layout.getContext());
                     TextView cbText = new TextView(layout.getContext());
                     cbText.setPadding(0,0,0,10);
                     cbText.setText(item.getCbText());
@@ -197,24 +190,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public class CheckboxListItemHolder extends RecyclerView.ViewHolder {
         //Поля картиники
         LinearLayout cbListLayout;
-        //List<CheckBox> mCheckBoxList = new ArrayList<>();
         public CheckboxListItemHolder(View itemView) {
             super(itemView);
             cbListLayout = (LinearLayout)itemView.findViewById(R.id.layout_to_add);
-
-            /*ListOfCheckboxesTaskListItem cbList = (ListOfCheckboxesTaskListItem)
-                    (mItems.get(tempViewHolderPosition + 1));
-            for (CheckboxTaskListItem item: cbList.getCbList()
-                 ) {
-                CheckBox cb = new CheckBox(cbListLayout.getContext());
-                cb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.
-                        LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                cbListLayout.addView(cb);
-                mCheckBoxList.add(cb);
-                int states[][] = {{android.R.attr.state_checked}, {}};
-                int colors[] = {R.color.black, R.color.gray};
-                CompoundButtonCompat.setButtonTintList(cb, new ColorStateList(states, colors));
-            }*/
         }
     }
 

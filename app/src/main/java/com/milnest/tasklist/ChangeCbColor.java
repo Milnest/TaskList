@@ -9,6 +9,8 @@ import android.widget.CompoundButton;
  * Created by t-yar on 26.04.2018.
  */
 
+/**Меняет цвет галочки чекбокса
+ * */
 public class ChangeCbColor {
     private static int states[][] = {{android.R.attr.state_checked}, {}};
     private static int colors[] = {R.color.black, R.color.gray};

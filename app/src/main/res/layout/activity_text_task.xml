@@ -16,32 +16,41 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <LinearLayout
+    <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".TextTaskActivity"
+        tools:showIn="@layout/activity_text_task">
 
-        <EditText
-            android:id="@+id/taskTitle"
+        <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.2"
-            android:inputType="textPersonName"
-            android:gravity="top"
-            android:maxLines="2"
-            android:hint="@string/task_title_hint"
-            android:textColorHint="@color/black"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/taskText"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.8"
-            android:gravity="top"
-            android:hint="@string/task_content_hint"
-            android:inputType="textMultiLine" />
+            <EditText
+                android:id="@+id/taskTitle"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.2"
+                android:gravity="top"
+                android:hint="@string/task_title_hint"
+                android:inputType="textPersonName"
+                android:maxLines="2"
+                android:textColorHint="@color/black" />
 
-    </LinearLayout>
+            <EditText
+                android:id="@+id/taskText"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.8"
+                android:gravity="top"
+                android:hint="@string/task_content_hint"
+                android:inputType="textMultiLine" />
+
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

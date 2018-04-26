@@ -12,6 +12,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CheckedTextView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -114,16 +116,27 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 //Заполнить ViewHolder новыми элементами.
                 for (CheckboxTaskListItem item: listOfCbTaskListItem.getCbList()
                         ) {
+                    //CheckBox cb = new CheckBox(layout.getContext());
                     CheckBox cb = new CheckBox(layout.getContext());
-                    cb.setText(item.getCbText());
+                    //cb.setText(item.getCbText());
                     cb.setChecked(item.isCbState());
+                    cb.setClickable(false);
                     cb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.
                             LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    layout.addView(cb);
-                    //mCheckBoxList.add(cb);
-                    int states[][] = {{android.R.attr.state_checked}, {}};
-                    int colors[] = {R.color.black, R.color.gray};
-                    CompoundButtonCompat.setButtonTintList(cb, new ColorStateList(states, colors));
+                    //EditText cbText = new EditText(layout.getContext());
+                    TextView cbText = new TextView(layout.getContext());
+                    cbText.setPadding(0,0,0,10);
+                    cbText.setText(item.getCbText());
+                    cbText.setTextColor(mInflater.getContext().getResources()
+                            .getColor(R.color.lum_red));
+                    cbText.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.
+                            LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    cbText.setClickable(false);
+                    LinearLayout innerLayout = new LinearLayout(layout.getContext());
+                    innerLayout.addView(cb);
+                    innerLayout.addView(cbText);
+                    layout.addView(innerLayout);
+                    ChangeCbColor.change(cb);
                 }
         }
     }
@@ -184,7 +197,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public class CheckboxListItemHolder extends RecyclerView.ViewHolder {
         //Поля картиники
         LinearLayout cbListLayout;
-        List<CheckBox> mCheckBoxList = new ArrayList<>();
+        //List<CheckBox> mCheckBoxList = new ArrayList<>();
         public CheckboxListItemHolder(View itemView) {
             super(itemView);
             cbListLayout = (LinearLayout)itemView.findViewById(R.id.layout_to_add);

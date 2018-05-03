@@ -32,9 +32,17 @@ public class TaskDatabaseHelper extends SQLiteOpenHelper {
                 + " TEXT, " + COLUMN_TYPE + " INTEGER, "+ COLUMN_CONTENT
                 + " TEXT);");
 
+        /*db.execSQL("CREATE VIRTUAL TABLE fts_task_table USING fts4 (content=" +
+                "'task_table', name, type, content)");*/
+
+        db.execSQL("CREATE VIRTUAL TABLE fts_task_table USING fts4 (_id, name, type, content)");
+
         db.execSQL("INSERT INTO "+ TABLE +" (" + COLUMN_ID + ", " + COLUMN_NAME
                 + ", " + COLUMN_TYPE  + ", " + COLUMN_CONTENT + ") VALUES (0,'Task1', " +
                 TYPE_ITEM_TEXT + ", 'task_content');");
+
+        db.execSQL("INSERT INTO fts_task_table (_id, name, type, content) SELECT _id, " +
+                "name, type, content FROM task_table");
     }
 
     @Override

@@ -468,7 +468,7 @@ public class MainActivity extends AppCompatActivity {
         DBAdapter db=new DBAdapter(this);
         db.openDB();
         mTaskListItems.clear();
-        Cursor c = db.Search(textToSearch);
+        Cursor c = db.SearchDynamic(textToSearch);
         showItems(c);
         db.close();
     }

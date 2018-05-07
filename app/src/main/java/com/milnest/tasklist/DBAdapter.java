@@ -59,6 +59,9 @@ public class DBAdapter {
             cv.put(TaskDatabaseHelper.COLUMN_TYPE, type);
             cv.put(TaskDatabaseHelper.COLUMN_CONTENT, content);
 
+            db.execSQL("INSERT INTO fts_task_table (_id, name, type, content) SELECT _id, " +
+                    "name, type, content FROM task_table");
+
             return db.insert(TaskDatabaseHelper.TABLE,TaskDatabaseHelper.COLUMN_ID,cv);
 
         }catch (SQLException e)
@@ -98,6 +101,9 @@ public class DBAdapter {
             cv.put(TaskDatabaseHelper.COLUMN_TYPE, type);
             cv.put(TaskDatabaseHelper.COLUMN_CONTENT, content);
 
+            db.execSQL("INSERT INTO fts_task_table (_id, name, type, content) SELECT _id, " +
+                    "name, type, content FROM task_table");
+
             return db.update(TaskDatabaseHelper.TABLE, cv,
                     TaskDatabaseHelper.COLUMN_ID + " =?",
                     new String[]{String.valueOf(id)});
@@ -113,10 +119,14 @@ public class DBAdapter {
     //DELETE
     public long Delete(int id)
     {
+        int del;
         try
         {
-            return db.delete(TaskDatabaseHelper.TABLE,TaskDatabaseHelper.COLUMN_ID +
+            del = db.delete(TaskDatabaseHelper.TABLE,TaskDatabaseHelper.COLUMN_ID +
                     " =?",new String[]{String.valueOf(id)});
+            db.execSQL("INSERT INTO fts_task_table (_id, name, type, content) SELECT _id, " +
+                    "name, type, content FROM task_table");
+            return del;
 
         }catch (SQLException e)
         {
@@ -136,10 +146,13 @@ public class DBAdapter {
 
     public Cursor SearchDynamic(String data)
     {
-        String[] columns={TaskDatabaseHelper.COLUMN_ID, TaskDatabaseHelper.COLUMN_NAME,
-                TaskDatabaseHelper.COLUMN_TYPE, TaskDatabaseHelper.COLUMN_CONTENT};
-
-        return db.rawQuery("select * from task_table where name LIKE ? OR content = LIKE ?", new String[]{data, data});
+        /*String[] columns={TaskDatabaseHelper.COLUMN_ID, TaskDatabaseHelper.COLUMN_NAME,
+                TaskDatabaseHelper.COLUMN_TYPE, TaskDatabaseHelper.COLUMN_CONTENT};*/
+        String[] selectionArgs = { data };
+        //return db.rawQuery("select * from task_table where name LIKE ? OR content = LIKE ?", new String[]{data, data});
+        Cursor cursor = db.rawQuery("SELECT * FROM fts_task_table " +
+                "WHERE fts_task_table MATCH ?", selectionArgs);
+        return cursor;
     }
 
 }

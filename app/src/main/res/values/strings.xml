@@ -2,12 +2,15 @@
     <string name="app_name">TaskList</string>
     <string name="split">В 2 колонки</string>
     <string name="delete">Удалить</string>
+    <string name="delete_canceled"></string>
+    <string name="delete_OK">Данные сохранены</string>
     <string name="title_add_task_text">Новый текст</string>
     <string name="title_add_task_photo">Новое фото</string>
     <string name="title_add_task_list">Новый список</string>
     <string name="task_title_hint">Название</string>
     <string name="task_content_hint">Текст</string>
     <string name="save_canceled">Данные не сохранены</string>
+    <string name="save_OK">Данные сохранены</string>
     <string name="save">Сохранить</string>
     <string name="text_translate">Перевести</string>
     <string name="share">Поделиться</string>

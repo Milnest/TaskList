@@ -5,7 +5,6 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.database.Cursor
 import android.database.SQLException
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -23,10 +22,11 @@ import android.util.Base64
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.Toast
 import com.milnest.tasklist.presenter.Presenter
 import com.milnest.tasklist.presenter.PresenterInterface
+import com.milnest.tasklist.repository.DBAdapter
+import com.milnest.tasklist.use_cases.DBMethodsAdapter
 
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     private var builder: AlertDialog.Builder? = null
     private var searchView: SearchView? = null
     private var dialog: AlertDialog? = null
+    var dbMethodsAdapter : DBMethodsAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,34 +96,37 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         //Layout Manager init
         recyclerView!!.layoutManager = mLinearLayoutManager
         initPhotoDialog()
-        //initPresenter()
+        initPresenter()
+        dbMethodsAdapter!!.open()
     }
 
-    /*private fun initPresenter() {
+    private fun initPresenter() {
         //Init presenter
         val mainPresenter = Presenter(this)
-        val dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, )
-    }*/
+        val db = DBAdapter.getDBAdapter(this)
+        dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, db, adapter, this)
+    }
 
     private fun initSearch() {
         searchView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (query != null) {
-                    search(query)
+                    dbMethodsAdapter!!.search(query)
                     return true
                 } else {
-                    retrieve()
+                    dbMethodsAdapter!!.retrieve()
                     return true
                 }
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                searchDynamic(newText)
+                dbMethodsAdapter!!.searchDynamic(newText)
                 return true
             }
         })
 
-        searchView!!.setOnQueryTextFocusChangeListener { v, hasFocus -> retrieve() }
+        searchView!!.setOnQueryTextFocusChangeListener { v, hasFocus ->
+            dbMethodsAdapter!!.retrieve() }
 
     }
 
@@ -180,9 +184,9 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
                     val text = data.getStringExtra(TEXT)
                     val get_id = data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT, text)
+                        dbMethodsAdapter!!.edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT, text)
                     } else {
-                        save(name, ItemsAdapter.TYPE_ITEM_TEXT, text)
+                        dbMethodsAdapter!!.save(name, ItemsAdapter.TYPE_ITEM_TEXT, text)
                     }
                 }
             } else {
@@ -191,7 +195,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
             CAMERA_RESULT -> try {
                 val thumbnail = data!!.extras!!.get("data") as Bitmap
                 val imageString = bitmapToBase64(thumbnail)
-                save("1", ItemsAdapter.TYPE_ITEM_IMAGE, imageString)
+                dbMethodsAdapter!!.save("1", ItemsAdapter.TYPE_ITEM_IMAGE, imageString)
             } catch (ex: NullPointerException) {
                 Toast.makeText(this, "Фото не сделано", Toast.LENGTH_SHORT).show()
             }
@@ -204,7 +208,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
                     imageStream = contentResolver.openInputStream(imageUri!!)
                     val selectedImage = BitmapFactory.decodeStream(imageStream)
                     val imgString = bitmapToBase64(selectedImage)
-                    save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString)
+                    dbMethodsAdapter!!.save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString)
                 } catch (e: FileNotFoundException) {
                     Toast.makeText(this, "Изображение не получено",
                             Toast.LENGTH_SHORT).show()
@@ -223,9 +227,9 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
                     val text = data.getStringExtra(LIST)
                     val get_id = data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text)
+                        dbMethodsAdapter!!.edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text)
                     } else {
-                        save("", ItemsAdapter.TYPE_ITEM_LIST, text)
+                        dbMethodsAdapter!!.save("", ItemsAdapter.TYPE_ITEM_LIST, text)
                     }
 
                 }
@@ -242,196 +246,18 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         return imgString
     }
 
-    /**Обновляет список задач
-     */
-    fun retrieve() {
-        val db = DBAdapter(this)
-
-        //OPEN
-        db.openDB()
-
-        mTaskListItems.clear()
-
-        //SELECT
-        val c = db.allTasks
-
-        //DATA ADDING TO ARRAYLIST
-        showItems(c)
-
-        db.close()
-
-    }
-
-    /**Отображает список задач, согласно текущим условиям(в том числе и для поиска)
-     */
-    private fun showItems(c: Cursor) {
-        adapter.notifyDataSetChanged()
-        while (c.moveToNext()) {
-            val id = c.getInt(0)
-            val name = c.getString(1)
-            val type = c.getInt(2)
-            val content = c.getString(3)
-
-            when (type) {
-                ItemsAdapter.TYPE_ITEM_TEXT -> mTaskListItems.add(TextTaskListItem(id, name, content))
-                ItemsAdapter.TYPE_ITEM_IMAGE -> {
-                    val bytes = Base64.decode(content, Base64.DEFAULT)
-                    mTaskListItems.add(ImgTaskListItem(id, name,
-                            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)))
-                }
-                ItemsAdapter.TYPE_ITEM_LIST -> {
-                    //Вместо этого парс
-                    /*List<CheckboxTaskListItem> cbList = new ArrayList<>();
-                        cbList.add(new CheckboxTaskListItem("текст", true));
-                        cbList.add(new CheckboxTaskListItem("текст", false));
-                        mTaskListItems.add(new ListOfCheckboxesTaskListItem(id, name, type, cbList));*/
-
-                    /*GsonBuilder builder = new GsonBuilder();
-                        Gson gson = builder.create();*/
-
-                    //gson.fromJson(new String(content), ListOfCheckboxesTaskListItem.class);
-
-                    /*mTaskListItems.add(gson.fromJson(new String(content), ListOfCheckboxesTaskListItem.class));*/
-                    val cbList = JsonAdapter.fromJson(content)
-                    cbList.id = id
-                    mTaskListItems.add(cbList)
-                }
-            }
-        }
-    }
-
-
-    /**Сохраняет новую задачу
-     */
-    fun save(name: String, type: Int, content: String) {
-        val db = DBAdapter(this)
-
-        //OPEN
-        db.openDB()
-
-        //INSERT
-        val result = db.add(name, type, content)
-
-        if (result > 0) {
-            Toast.makeText(this, "Задача добавлена!", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Ошибка добавления!", Toast.LENGTH_SHORT).show()
-        }
-
-        //CLOSE
-        db.close()
-
-        //refresh
-        retrieve()
-
-    }
-
-    /**Удаляет значение по id
-     */
-    fun delete(id: Int) {
-        val db = DBAdapter(this)
-
-        //OPEN
-        db.openDB()
-
-        //INSERT
-        val result = db.Delete(id)
-
-        if (result > 0) {
-            Toast.makeText(this, "Задача успешно удалена!", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Ошибка удаления!", Toast.LENGTH_SHORT).show()
-        }
-
-        //CLOSE
-        db.close()
-
-        //refresh
-        retrieve()
-
-    }
-
-    /**Выполняет получение значения по id
-     */
-    fun getById(id: Int): Array<String> {
-
-        val db = DBAdapter(this)
-        db.openDB()
-
-        //SELECT
-        val c = db.allTasks
-        var name = ""
-        var content = ""
-
-        //LOOP THRU THE DATA ADDING TO ARRAYLIST
-        while (c.moveToNext()) {
-            val get_id = c.getInt(0)
-            //TODO перекодить, забирая значения из БД напрямую!
-            if (get_id == id) {
-                name = c.getString(1)
-                //int type = c.getInt(2);
-                content = c.getString(3)
-            }
-        }
-        db.close()
-
-        return arrayOf(name, content)
-    }
-
-    /**Осуществляет редактирование значения по id
-     */
-    fun edit(id: Int, name: String, type: Int, content: String) {
-        val db = DBAdapter(this)
-
-        //OPEN
-        db.openDB()
-
-        //INSERT
-        val result = db.UPDATE(id, name, type, content)
-
-        if (result > 0) {
-            Toast.makeText(this, "Задача изменена!", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Ошибка изменения!", Toast.LENGTH_SHORT).show()
-        }
-
-        //CLOSE
-        db.close()
-
-        //refresh
-        retrieve()
-
-    }
-
-    /**Осуществляет простой поиск из строки прямым сравнением значений
-     */
-    fun search(textToSearch: String?) {
-        val db = DBAdapter(this)
-        db.openDB()
-        mTaskListItems.clear()
-        val c = db.Search(textToSearch!!)
-        showItems(c)
-        db.close()
-    }
-
-    /**Осуществляет динамический поиск из строки
-     */
-    fun searchDynamic(textToSearch: String) {
-        val db = DBAdapter(this)
-        db.openDB()
-        mTaskListItems.clear()
-        val c = db.SearchDynamic(textToSearch)
-        showItems(c)
-        db.close()
-    }
-
     override fun showToast(toShow: String) {
         Toast.makeText(this, toShow, Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
         super.onResume()
-        retrieve()
+        dbMethodsAdapter!!.retrieve();
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        dbMethodsAdapter!!.close()
     }
 
     companion object {

@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.repository
 
 import android.content.ContentValues
 import android.content.Context
@@ -6,12 +6,13 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.widget.Toast
+import com.milnest.tasklist.TaskDatabaseHelper
 
 /**
  * Created by t-yar on 21.04.2018.
  */
 
-class DBAdapter(internal var c: Context) {
+class DBAdapter private constructor(internal var c: Context) {
     internal lateinit var db: SQLiteDatabase
     internal var helper: TaskDatabaseHelper
 
@@ -126,6 +127,8 @@ class DBAdapter(internal var c: Context) {
         return cursor
     }
 
-
+    companion object {
+        fun getDBAdapter(con: Context) = DBAdapter(con);
+    }
 
 }

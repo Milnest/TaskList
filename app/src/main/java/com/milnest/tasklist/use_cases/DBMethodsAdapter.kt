@@ -1,23 +1,17 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.use_cases
 
-import android.content.Context
 import android.database.Cursor
 import android.graphics.BitmapFactory
-import android.support.v7.app.AppCompatActivity
 import android.util.Base64
-import android.util.Log
-import android.widget.Toast
+import com.milnest.tasklist.*
 import com.milnest.tasklist.presenter.Presenter
-import com.milnest.tasklist.presenter.PresenterInterface
+import com.milnest.tasklist.repository.DBAdapter
 
 /**
  * Created by t-yar on 22.04.2018.
  */
 
 /**Класс для обобщения работы с базой данных
- * Пока не используется
- * Обработка всех изменений БД инициализируется MainActivity
- * TODO перенести функциональность DBAdapter-а в Helper, а функции для БД из main activity - сюда.
  */
 class DBMethodsAdapter(var taskList : MutableList<TaskListItem>, val db: DBAdapter,
                        val taskAdapter : ItemsAdapter, val activity: MainActivity) {

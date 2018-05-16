@@ -1,5 +1,6 @@
 package com.milnest.tasklist.repository
 
+import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
@@ -128,7 +129,14 @@ class DBAdapter private constructor(internal var c: Context) {
     }
 
     companion object {
-        fun getDBAdapter(con: Context) = DBAdapter(con);
+        private var dbAdapter: DBAdapter? = null
+        fun setDBAdapter(con: Context){
+            if(dbAdapter == null) {
+                dbAdapter = DBAdapter(con)
+            }
+        }
+        fun getDBAdapter() = dbAdapter
     }
 
 }
+

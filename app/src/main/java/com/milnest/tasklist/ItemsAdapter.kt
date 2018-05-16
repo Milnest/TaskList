@@ -13,6 +13,7 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.milnest.tasklist.use_cases.DBMethodsAdapter
 
 import java.util.ArrayList
 
@@ -27,11 +28,13 @@ class ItemsAdapter
     private val mInflater: LayoutInflater
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
+    private val dbMethodsAdapter : DBMethodsAdapter?
     private var tempViewHolderPosition: Int = 0
 
     init {
         mViewHolderList = ArrayList()
         mInflater = LayoutInflater.from(context)
+        dbMethodsAdapter = DBMethodsAdapter.getDBMethodsAdapter()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
@@ -148,7 +151,7 @@ class ItemsAdapter
     //Удаляет задачу по позиции
     internal fun removeItem(position: Int) {
         val activity = mInflater.context as MainActivity
-        activity.dbMethodsAdapter!!.delete(position)
+        dbMethodsAdapter!!.delete(position)
         //TODO : ТУТ И ВО ВСЕХ ПОДОБНЫХ МЕСТАХ ПЕРЕВЕСТИ ЛОГИКУ С АКТИВИТИ НА ПРЕЗЕНТЕР
     }
 
@@ -216,14 +219,14 @@ class ItemsAdapter
             when (mViewHolder.itemViewType) {
                 TYPE_ITEM_TEXT -> {
                     val textIntentChange = Intent(activity, TextTaskActivity::class.java)
-                    textIntentChange.putExtra("data", activity.dbMethodsAdapter!!.getById(
+                    textIntentChange.putExtra("data", dbMethodsAdapter!!.getById(
                             mItems!![tempViewHolderPosition].id))
                     textIntentChange.putExtra("id", mItems[tempViewHolderPosition].id)
                     activity.startActivityForResult(textIntentChange, MainActivity.TEXT_RESULT)
                 }
                 TYPE_ITEM_LIST -> {
                     val listIntentChange = Intent(activity, ListTaskActivity::class.java)
-                    listIntentChange.putExtra("data", activity.dbMethodsAdapter!!.getById(
+                    listIntentChange.putExtra("data", dbMethodsAdapter!!.getById(
                             mItems!![tempViewHolderPosition].id))
                     listIntentChange.putExtra("id", mItems!![tempViewHolderPosition].id)
                     activity.startActivityForResult(listIntentChange, MainActivity.LIST_RESULT)

@@ -90,21 +90,27 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         //View init
         mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(mToolbar)
+
+        initPresenter()
+
         //Recycler data
         initRecyclerView()
         adapter.initActionMode()
         //Layout Manager init
         recyclerView!!.layoutManager = mLinearLayoutManager
         initPhotoDialog()
-        initPresenter()
+
         dbMethodsAdapter!!.open()
     }
 
     private fun initPresenter() {
         //Init presenter
         val mainPresenter = Presenter(this)
-        val db = DBAdapter.getDBAdapter(this)
-        dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, db, adapter, this)
+        DBAdapter.setDBAdapter(this)
+        //val db = DBAdapter.getDBAdapter()
+        //dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, db!!, adapter, this)
+        DBMethodsAdapter.setDBMethodsAdapter(this)
+        dbMethodsAdapter = DBMethodsAdapter.getDBMethodsAdapter()
     }
 
     private fun initSearch() {

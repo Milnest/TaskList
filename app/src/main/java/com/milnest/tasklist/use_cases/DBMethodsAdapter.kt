@@ -1,5 +1,6 @@
 package com.milnest.tasklist.use_cases
 
+import android.content.Context
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -13,8 +14,8 @@ import com.milnest.tasklist.repository.DBAdapter
 
 /**Класс для обобщения работы с базой данных
  */
-class DBMethodsAdapter(var taskList : MutableList<TaskListItem>, val db: DBAdapter,
-                       val taskAdapter : ItemsAdapter, val activity: MainActivity) {
+class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListItem>,
+                                           val db: DBAdapter, val activity: MainActivity) {
 
     fun open(){
         db.openDB()
@@ -39,7 +40,8 @@ class DBMethodsAdapter(var taskList : MutableList<TaskListItem>, val db: DBAdapt
     /**Отображает список задач, согласно текущим условиям(в том числе и для поиска)
      */
     private fun showItems(c: Cursor) {
-        taskAdapter.notifyDataSetChanged()
+//        taskAdapter.notifyDataSetChanged()
+        activity.adapter.notifyDataSetChanged()
         //вместо верхней строчки обращение к презентеру
 
         while (c.moveToNext()) {
@@ -158,5 +160,16 @@ class DBMethodsAdapter(var taskList : MutableList<TaskListItem>, val db: DBAdapt
         taskList.clear()
         val c = db.SearchDynamic(textToSearch)
         showItems(c)
+    }
+
+    companion object {
+        private var dbMethodsAdapter: DBMethodsAdapter? = null
+        fun setDBMethodsAdapter(activity: MainActivity){
+            if(dbMethodsAdapter == null) {
+                dbMethodsAdapter = DBMethodsAdapter(MainActivity.mTaskListItems,
+                        DBAdapter.getDBAdapter()!!, activity)
+            }
+        }
+        fun getDBMethodsAdapter() = dbMethodsAdapter!!
     }
 }

@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.view
 
 import android.app.Activity
 import android.app.SearchManager
@@ -23,10 +23,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import com.milnest.tasklist.R
+import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.presenter.Presenter
 import com.milnest.tasklist.presenter.PresenterInterface
 import com.milnest.tasklist.repository.DBAdapter
-import com.milnest.tasklist.use_cases.DBMethodsAdapter
+import com.milnest.tasklist.interactor.DBMethodsAdapter
 
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
@@ -106,7 +108,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     private fun initPresenter() {
         //Init presenter
         val mainPresenter = Presenter(this)
-        DBAdapter.setDBAdapter(this)
+        //DBAdapter.setDBAdapter(this)
         //val db = DBAdapter.getDBAdapter()
         //dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, db!!, adapter, this)
         DBMethodsAdapter.setDBMethodsAdapter(this)

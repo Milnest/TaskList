@@ -1,7 +1,7 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.interactor
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 
 /**
  * Created by t-yar on 24.04.2018.

@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.view
 
 import android.app.Activity
 import android.content.Intent
@@ -11,6 +11,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import com.milnest.tasklist.R
+import com.milnest.tasklist.interactor.YandexTranslate
 
 import java.io.IOException
 

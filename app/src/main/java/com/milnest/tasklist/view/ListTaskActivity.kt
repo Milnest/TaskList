@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.view
 
 import android.app.Activity
 import android.content.Intent
@@ -13,6 +13,12 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.milnest.tasklist.R
+import com.milnest.tasklist.entities.CheckboxTaskListItem
+import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
+import com.milnest.tasklist.entities.TaskListItem
+import com.milnest.tasklist.interactor.ChangeCbColor
+import com.milnest.tasklist.interactor.JsonAdapter
 
 import java.util.ArrayList
 

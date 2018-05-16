@@ -1,13 +1,13 @@
 package com.milnest.tasklist.repository
 
-import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.widget.Toast
-import com.milnest.tasklist.TaskDatabaseHelper
+import com.milnest.tasklist.application.app
+import com.milnest.tasklist.db.TaskDatabaseHelper
 
 /**
  * Created by t-yar on 21.04.2018.
@@ -129,12 +129,13 @@ class DBAdapter private constructor(internal var c: Context) {
     }
 
     companion object {
-        private var dbAdapter: DBAdapter? = null
+        /*private var dbAdapter: DBAdapter? = null
         fun setDBAdapter(con: Context){
             if(dbAdapter == null) {
                 dbAdapter = DBAdapter(con)
             }
-        }
+        }*/
+        private val dbAdapter: DBAdapter = DBAdapter(app.context)
         fun getDBAdapter() = dbAdapter
     }
 

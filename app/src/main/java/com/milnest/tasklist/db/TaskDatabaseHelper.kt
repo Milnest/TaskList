@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -30,7 +30,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE")
+        db.execSQL("DROP TABLE IF EXISTS ${TABLE}")
     }
 
     companion object {

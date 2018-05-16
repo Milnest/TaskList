@@ -1,12 +1,17 @@
-package com.milnest.tasklist.use_cases
+package com.milnest.tasklist.interactor
 
-import android.content.Context
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.util.Base64
 import com.milnest.tasklist.*
+import com.milnest.tasklist.application.app
+import com.milnest.tasklist.entities.ImgTaskListItem
+import com.milnest.tasklist.entities.TaskListItem
+import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.presenter.Presenter
 import com.milnest.tasklist.repository.DBAdapter
+import com.milnest.tasklist.view.ItemsAdapter
+import com.milnest.tasklist.view.MainActivity
 
 /**
  * Created by t-yar on 22.04.2018.
@@ -163,6 +168,8 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
     }
 
     companion object {
+        /*private var dbMethodsAdapter: DBMethodsAdapter = DBMethodsAdapter(
+                MainActivity.mTaskListItems, DBAdapter.getDBAdapter(), app.context as MainActivity)*/
         private var dbMethodsAdapter: DBMethodsAdapter? = null
         fun setDBMethodsAdapter(activity: MainActivity){
             if(dbMethodsAdapter == null) {

@@ -1,11 +1,10 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.view
 
 import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,13 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.milnest.tasklist.use_cases.DBMethodsAdapter
+import com.milnest.tasklist.R
+import com.milnest.tasklist.entities.ImgTaskListItem
+import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
+import com.milnest.tasklist.entities.TaskListItem
+import com.milnest.tasklist.entities.TextTaskListItem
+import com.milnest.tasklist.interactor.ChangeCbColor
+import com.milnest.tasklist.interactor.DBMethodsAdapter
 
 import java.util.ArrayList
 
@@ -28,7 +33,7 @@ class ItemsAdapter
     private val mInflater: LayoutInflater
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
-    private val dbMethodsAdapter : DBMethodsAdapter?
+    private val dbMethodsAdapter : DBMethodsAdapter
     private var tempViewHolderPosition: Int = 0
 
     init {
@@ -280,7 +285,6 @@ class ItemsAdapter
     }
 
     companion object {
-
         val TYPE_ITEM_TEXT = 0
         val TYPE_ITEM_IMAGE = 1
         val TYPE_ITEM_LIST = 2

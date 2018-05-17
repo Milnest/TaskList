@@ -18,4 +18,5 @@
     <string name="open_gallery">Взять из галереи</string>
     <string name="new_cb">+ Новый пункт</string>
     <string name="new_text">Текст задачи</string>
+    <string name="action_mode">Удалить</string>
 </resources>

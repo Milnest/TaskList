@@ -29,18 +29,21 @@ import com.milnest.tasklist.presenter.Presenter
 import com.milnest.tasklist.presenter.PresenterInterface
 import com.milnest.tasklist.repository.DBAdapter
 import com.milnest.tasklist.interactor.DBMethodsAdapter
+import com.milnest.tasklist.presenter.ActModeInterface
+import com.milnest.tasklist.presenter.RecyclerHolderPresenter
 
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.util.ArrayList
 
-class MainActivity : AppCompatActivity(), PresenterInterface {
+class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
+
     private var recyclerView: RecyclerView? = null
     private var mToolbar: Toolbar? = null
     private val mGridManager = GridLayoutManager(this, 2)
     private val mLinearLayoutManager = LinearLayoutManager(this)
-    var mActionMode: android.support.v7.view.ActionMode? = null
+    override var mActionMode: android.support.v7.view.ActionMode? = null
     var mActionModeCallback: android.support.v7.view.ActionMode.Callback? = null
     lateinit var adapter: ItemsAdapter
     private var builder: AlertDialog.Builder? = null
@@ -51,6 +54,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        activity = this
         setInitialData()
     }
 
@@ -95,6 +99,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
         initPresenter()
 
+        RecyclerHolderPresenter.attachView(this)
         //Recycler data
         initRecyclerView()
         adapter.initActionMode()
@@ -268,6 +273,22 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         dbMethodsAdapter!!.close()
     }
 
+    override fun showActionBar(title: Int) {
+        mActionMode = startSupportActionMode(mActionModeCallback!!)
+        mActionMode!!.title = getString(title)
+    }
+
+    override fun closeActionBar() {
+        mActionMode!!.finish()
+    }
+
+    override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
+        val intentChange = Intent(this, activityClass)
+        intentChange.putExtra("data", dbMethodsAdapter!!.getById(itemId))
+        intentChange.putExtra("id", itemId)
+        startActivityForResult(intentChange, actResType)
+    }
+
     companion object {
 
         var mTaskListItems: MutableList<TaskListItem> = ArrayList()
@@ -279,6 +300,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         private val CAMERA_RESULT = 2
         private val GALLERY_RESULT = 3
         val LIST_RESULT = 4
+        lateinit var activity: MainActivity
     }
 
 }

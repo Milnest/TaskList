@@ -19,6 +19,7 @@ import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.interactor.ChangeCbColor
 import com.milnest.tasklist.interactor.DBMethodsAdapter
+import com.milnest.tasklist.presenter.RecyclerHolderPresenter
 
 import java.util.ArrayList
 
@@ -34,7 +35,7 @@ class ItemsAdapter
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
     private val dbMethodsAdapter : DBMethodsAdapter
-    private var tempViewHolderPosition: Int = 0
+    //private var tempViewHolderPosition: Int = 0
 
     init {
         mViewHolderList = ArrayList()
@@ -55,8 +56,10 @@ class ItemsAdapter
                 tempViewHolder = TextItemHolder(v)
                 val tempTextHolder: TextItemHolder = tempViewHolder as TextItemHolder;
                 mViewHolderList.add(tempTextHolder)
-                v.setOnLongClickListener(LongElementClickListener(tempTextHolder))
-                v.setOnClickListener(ElementClickListener(tempTextHolder))
+                /*v.setOnLongClickListener(LongElementClickListener(tempTextHolder))
+                v.setOnClickListener(ElementClickListener(tempTextHolder))*/
+                v.setOnLongClickListener(RecyclerHolderPresenter(tempTextHolder))
+                v.setOnClickListener(RecyclerHolderPresenter(tempTextHolder))
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_IMAGE -> {
@@ -65,8 +68,10 @@ class ItemsAdapter
                 tempViewHolder = ImgItemHolder(v)
                 val tempImgHolder: ImgItemHolder = tempViewHolder as ImgItemHolder;
                 mViewHolderList.add(tempImgHolder)
-                v.setOnLongClickListener(LongElementClickListener(tempImgHolder))
+                //v.setOnLongClickListener(LongElementClickListener(tempImgHolder))
                 //v.setOnClickListener(new ElementClickListener(tempViewHolder));
+                v.setOnLongClickListener(RecyclerHolderPresenter(tempImgHolder))
+                v.setOnClickListener(RecyclerHolderPresenter(tempImgHolder))
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_LIST -> {
@@ -76,8 +81,10 @@ class ItemsAdapter
                 val tempListHolder: CheckboxListItemHolder =
                         tempViewHolder as CheckboxListItemHolder
                 mViewHolderList.add(tempListHolder)
-                v.setOnLongClickListener(LongElementClickListener(tempListHolder))
-                v.setOnClickListener(ElementClickListener(tempListHolder))
+                /*v.setOnLongClickListener(LongElementClickListener(tempListHolder))
+                v.setOnClickListener(ElementClickListener(tempListHolder))*/
+                v.setOnLongClickListener(RecyclerHolderPresenter(tempListHolder))
+                v.setOnClickListener(RecyclerHolderPresenter(tempListHolder))
                 return tempViewHolder
             }
             else -> return null
@@ -256,6 +263,7 @@ class ItemsAdapter
         }
     }
 
+    //TODO : вынести в презентер!
     fun initActionMode() {
         val activity = mInflater.context as MainActivity
         activity.mActionModeCallback = object : android.support.v7.view.ActionMode.Callback {
@@ -288,5 +296,6 @@ class ItemsAdapter
         val TYPE_ITEM_TEXT = 0
         val TYPE_ITEM_IMAGE = 1
         val TYPE_ITEM_LIST = 2
+        var tempViewHolderPosition: Int = 0
     }
 }

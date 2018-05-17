@@ -8,4 +8,7 @@ class Presenter(val activity: PresenterInterface) {
     fun toastToActivity(toShow : String) {
         activity.showToast(toShow);
     }
+
+    //Презентер ресайклера
+
 }

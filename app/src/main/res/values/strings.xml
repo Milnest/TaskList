@@ -19,4 +19,8 @@
     <string name="new_cb">+ Новый пункт</string>
     <string name="new_text">Текст задачи</string>
     <string name="action_mode">Удалить</string>
+    <string name="photo_chanceled">Фото не сделано</string>
+    <string name="image_chanceled">Изображение не получено</string>
+    <string name="translate_completed">Перевод завершён!</string>
+    <string name="translate_fail">Ошибка перевода!</string>
 </resources>

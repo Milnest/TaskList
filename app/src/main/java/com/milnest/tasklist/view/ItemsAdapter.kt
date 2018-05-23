@@ -19,6 +19,7 @@ import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.interactor.ChangeCbColor
 import com.milnest.tasklist.interactor.DBMethodsAdapter
+import com.milnest.tasklist.presenter.ItemsAdapterInterface
 import com.milnest.tasklist.presenter.RecyclerHolderPresenter
 
 import java.util.ArrayList
@@ -30,7 +31,8 @@ import java.util.ArrayList
 class ItemsAdapter
 //For activity
 
-(private val mItems: List<TaskListItem>?, context: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+(private val mItems: List<TaskListItem>?, context: Context) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemsAdapterInterface {
     private val mInflater: LayoutInflater
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
@@ -55,11 +57,12 @@ class ItemsAdapter
                 //val x: String? = y as String?
                 tempViewHolder = TextItemHolder(v)
                 val tempTextHolder: TextItemHolder = tempViewHolder as TextItemHolder;
-                mViewHolderList.add(tempTextHolder)
-                /*v.setOnLongClickListener(LongElementClickListener(tempTextHolder))
-                v.setOnClickListener(ElementClickListener(tempTextHolder))*/
-                v.setOnLongClickListener(RecyclerHolderPresenter(tempTextHolder))
-                v.setOnClickListener(RecyclerHolderPresenter(tempTextHolder))
+                //mViewHolderList.add(tempTextHolder)
+                //mViewHolderList.add(tempTextHolder.adapterPosition, tempTextHolder)
+                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempTextHolder))
+                v.setOnClickListener(RecyclerHolderPresenter(tempTextHolder))*/
+                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition))
+                v.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition))*/
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_IMAGE -> {
@@ -67,11 +70,11 @@ class ItemsAdapter
                         parent, false)
                 tempViewHolder = ImgItemHolder(v)
                 val tempImgHolder: ImgItemHolder = tempViewHolder as ImgItemHolder;
-                mViewHolderList.add(tempImgHolder)
-                //v.setOnLongClickListener(LongElementClickListener(tempImgHolder))
-                //v.setOnClickListener(new ElementClickListener(tempViewHolder));
-                v.setOnLongClickListener(RecyclerHolderPresenter(tempImgHolder))
-                v.setOnClickListener(RecyclerHolderPresenter(tempImgHolder))
+                //mViewHolderList.add(tempImgHolder)
+                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempImgHolder))
+                v.setOnClickListener(RecyclerHolderPresenter(tempImgHolder))*/
+                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition))
+                v.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition))*/
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_LIST -> {
@@ -80,11 +83,12 @@ class ItemsAdapter
                 tempViewHolder = CheckboxListItemHolder(v)
                 val tempListHolder: CheckboxListItemHolder =
                         tempViewHolder as CheckboxListItemHolder
-                mViewHolderList.add(tempListHolder)
-                /*v.setOnLongClickListener(LongElementClickListener(tempListHolder))
-                v.setOnClickListener(ElementClickListener(tempListHolder))*/
-                v.setOnLongClickListener(RecyclerHolderPresenter(tempListHolder))
-                v.setOnClickListener(RecyclerHolderPresenter(tempListHolder))
+                //mViewHolderList.add(tempListHolder)
+                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempListHolder))
+
+                v.setOnClickListener(RecyclerHolderPresenter(tempListHolder))*/
+                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition))
+                v.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition))*/
                 return tempViewHolder
             }
             else -> return null
@@ -95,13 +99,16 @@ class ItemsAdapter
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Получаем тип айтема в данной позиции для заполнения его данными
         tempViewHolderPosition = holder.adapterPosition
+        mViewHolderList.add(tempViewHolderPosition, holder)
         val taskListItem = mItems!![position]
+        val type = taskListItem.type
+        holder.itemView.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition, type))
+        holder.itemView.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition, type))
         //Снимаем выделение
         if (taskListItem.isSelected)
             holder.itemView.setBackgroundResource(R.color.black)
         else
             holder.itemView.setBackgroundResource(R.color.colorAccent)
-        val type = taskListItem.type
         when (type) {
             TaskListItem.TYPE_ITEM_TEXT -> {
                 //Выполняется приведение типа для вызова отличных методов
@@ -124,7 +131,9 @@ class ItemsAdapter
                 layout.removeAllViews()
                 //Заполнить ViewHolder новыми элементами.
                 for (item in listOfCbTaskListItem.cbList!!) {
-                    val cb = CheckBox(layout.context)
+                    val cb = CheckBox(layout.context).apply {
+                        setOnTouchListener { _, _ -> true }
+                    }
                     cb.isChecked = item.isCbState
                     cb.isClickable = false
                     cb.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -201,60 +210,24 @@ class ItemsAdapter
         }
     }
 
-    inner class LongElementClickListener(internal var mViewHolder: RecyclerView.ViewHolder) : View.OnLongClickListener {
-
-        override fun onLongClick(v: View): Boolean {
-            val activity = mInflater.context as MainActivity
-            if (activity.mActionMode == null) {
-                activity.mActionMode = activity.startSupportActionMode(
-                        activity.mActionModeCallback!!)
-                activity.mActionMode!!.title = "Action Mode"
-                tempViewHolderPosition = mViewHolder.adapterPosition
-                //Добавление выделения при выборе
-                addSelection(mViewHolder)
-            } else {
-                activity.mActionMode!!.finish()
-                //Сброс выделения
-                removeSelection()
-            }
-            return true
-        }
-
-
-    }
-
-    inner class ElementClickListener(internal var mViewHolder: RecyclerView.ViewHolder) : View.OnClickListener {
-
-        override fun onClick(v: View) {
-            val activity = mInflater.context as MainActivity
-            tempViewHolderPosition = mViewHolder.adapterPosition
-            when (mViewHolder.itemViewType) {
-                TYPE_ITEM_TEXT -> {
-                    val textIntentChange = Intent(activity, TextTaskActivity::class.java)
-                    textIntentChange.putExtra("data", dbMethodsAdapter!!.getById(
-                            mItems!![tempViewHolderPosition].id))
-                    textIntentChange.putExtra("id", mItems[tempViewHolderPosition].id)
-                    activity.startActivityForResult(textIntentChange, MainActivity.TEXT_RESULT)
-                }
-                TYPE_ITEM_LIST -> {
-                    val listIntentChange = Intent(activity, ListTaskActivity::class.java)
-                    listIntentChange.putExtra("data", dbMethodsAdapter!!.getById(
-                            mItems!![tempViewHolderPosition].id))
-                    listIntentChange.putExtra("id", mItems!![tempViewHolderPosition].id)
-                    activity.startActivityForResult(listIntentChange, MainActivity.LIST_RESULT)
-                }
-            }
-        }
-    }
-
     //Выделяет задачу
-    private fun addSelection(viewHolder: RecyclerView.ViewHolder) {
+    /*override fun addSelection(viewHolder: RecyclerView.ViewHolder) {
+        //mViewHolderList.get(tempViewHolderPosition);
         viewHolder.itemView.setBackgroundResource(R.color.black)
+        tempViewHolderPosition = viewHolder.adapterPosition
+        mItems!![tempViewHolderPosition].isSelected = true
+    }*/
+
+    override fun addSelection(position: Int) {
+        tempViewHolderPosition = position
+        var viewHolder = mViewHolderList.get(tempViewHolderPosition);
+        viewHolder.itemView.setBackgroundResource(R.color.black)
+        //tempViewHolderPosition = viewHolder.adapterPosition
         mItems!![tempViewHolderPosition].isSelected = true
     }
 
     //Снимает выделение задачи
-    private fun removeSelection() {
+    override fun removeSelection() {
         for (item in mItems!!) {
             item.isSelected = false
         }

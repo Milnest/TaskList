@@ -12,14 +12,16 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import com.milnest.tasklist.R
+import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.interactor.YandexTranslate
+import com.milnest.tasklist.presenter.TextActInterface
+import com.milnest.tasklist.presenter.TextActivityPresenter
 
 import java.io.IOException
 
 /**Класс текстовой задачи
  */
-class TextTaskActivity : AppCompatActivity() {
-
+class TextTaskActivity : AppCompatActivity(), TextActInterface {
     internal lateinit var taskTitle: EditText
     internal lateinit var taskText: EditText
     private var title: String? = null
@@ -27,6 +29,7 @@ class TextTaskActivity : AppCompatActivity() {
     internal lateinit var mToolbar: Toolbar
     private val TAG = "TextTaskActivity"
     private var mId: Int? = null
+    lateinit var presenter : TextActivityPresenter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_text_task)
@@ -35,19 +38,22 @@ class TextTaskActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val extras = intent.extras
+        /*val extras = intent.extras
         if (extras != null) {
             val data = extras.getStringArray("data")
             taskTitle.setText(data!![0])
             taskText.setText(data[1])
             mId = extras.getInt("id")
-        }
+        }*/
+        presenter.startFillUsed()
     }
 
     private fun setInitialData() {
         taskTitle = findViewById<View>(R.id.taskTitle) as EditText
         taskText = findViewById<View>(R.id.taskText) as EditText
         mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
+        presenter = TextActivityPresenter()
+        presenter.attachView(this)
         setSupportActionBar(mToolbar)
     }
 
@@ -61,20 +67,26 @@ class TextTaskActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_task_text_save -> {
-                saveText()
+                presenter.saveButtonClicked()
+                //saveText()
                 finish()
             }
             R.id.action_task_text_share -> {
-                saveText()
-                val shareIntent = Intent(Intent.ACTION_SEND)
+                presenter.saveButtonClicked()
+                presenter.shareButtonClicked()
+                /*val shareIntent = Intent(Intent.ACTION_SEND)
                 shareIntent.type = "text/plain"
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, title)
                 shareIntent.putExtra(Intent.EXTRA_TEXT, text)
-                startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))*/
             }
-            R.id.action_task_text_translate -> translation()
+            R.id.action_task_text_translate -> presenter.translationButtonClicked()/*translation()*/
         }//finish();
         return true
+    }
+
+    override fun startShareAct(shareIntent: Intent){
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
     }
 
     /**Запускает метод в другом потоке для выполнения перевода
@@ -86,7 +98,7 @@ class TextTaskActivity : AppCompatActivity() {
 
     /**Сохраняет данные в Intent
      */
-    private fun saveText() {
+    /*private fun saveText() {
         val data = Intent()
         getText()
         data.putExtra(MainActivity.NAME, title)
@@ -95,11 +107,34 @@ class TextTaskActivity : AppCompatActivity() {
             data.putExtra(MainActivity.ID, mId!!)
         }
         setResult(Activity.RESULT_OK, data)
+    }*/
+
+    override fun saveText(data : Intent) {
+        setResult(Activity.RESULT_OK, data)
     }
 
-    private fun getText() {
+    override fun getText(): TextActData {
         title = taskTitle.text.toString()
         text = taskText.text.toString()
+        return TextActData(title.toString(), text.toString()/*, mId*/)/*arrayOf(title, text, mId)*/
+    }
+
+    override fun setText(strings: Array<String>/*, id : Int?*/){
+        //TODO: Вынести Id В презентер
+        taskTitle.setText(strings[0])
+        taskText.setText(strings[1])
+        /*if(id!=null){
+            mId = id
+        }*/
+    }
+
+    override fun showToast(toShow: Int) {
+        Toast.makeText(this, getString(toShow),
+                Toast.LENGTH_SHORT).show()
+    }
+
+    override fun getStartText(): Intent?{
+        return intent
     }
 
     override fun onDestroy() {

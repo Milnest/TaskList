@@ -69,6 +69,7 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
                 }
             }
         }
+        //activity.adapter.notifyDataSetChanged()
     }
 
 
@@ -98,10 +99,10 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
         val result = db.Delete(id)
 
             if (result > 0) {
-                Presenter(activity).toastToActivity(activity.getString(R.string.delete_OK))
+                Presenter(activity).toastToActivity(R.string.delete_OK)
 //            Toast.makeText(this, "Задача успешно удалена!", Toast.LENGTH_SHORT).show()
             } else {
-                Presenter(activity).toastToActivity(activity.getString(R.string.delete_canceled))
+                Presenter(activity).toastToActivity(R.string.delete_canceled)
 //            Toast.makeText(this, "Ошибка удаления!", Toast.LENGTH_SHORT).show()
             }
 

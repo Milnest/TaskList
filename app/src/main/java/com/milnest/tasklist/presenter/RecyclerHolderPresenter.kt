@@ -1,57 +1,49 @@
 package com.milnest.tasklist.presenter
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
-import android.support.v7.widget.RecyclerView
-import android.text.Selection.removeSelection
-import android.view.SurfaceHolder
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import com.milnest.tasklist.R
-import com.milnest.tasklist.application.app
-import com.milnest.tasklist.view.ItemsAdapter
-import com.milnest.tasklist.view.ItemsAdapter.Companion.tempViewHolderPosition
+import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.view.ListTaskActivity
 import com.milnest.tasklist.view.MainActivity
 import com.milnest.tasklist.view.TextTaskActivity
 
-class RecyclerHolderPresenter(var holder: RecyclerView.ViewHolder) : View.OnLongClickListener,
-        View.OnClickListener {
+class RecyclerHolderPresenter(var position: Int, var type: Int) : View.OnLongClickListener,
+        View.OnClickListener{
 
-    //TODO : активизировать снятие и удаление выделения
     override fun onLongClick(v: View): Boolean {
         if (view!!.mActionMode == null) {
             view!!.showActionBar(R.string.action_mode)
-            tempViewHolderPosition = holder.adapterPosition
             //Добавление выделения при выборе
-            //addSelection(mViewHolder)
+            adapter!!.addSelection(position)
         } else {
             view!!.closeActionBar()
             //Сброс выделения
-            //removeSelection()
+            adapter!!.removeSelection()
         }
-        /*view.showActionMode*/
         return true
     }
 
     override fun onClick(v: View) {
-        tempViewHolderPosition = holder.adapterPosition
-        when (holder.itemViewType) {
-            ItemsAdapter.TYPE_ITEM_TEXT -> {
-                view!!.startTaskActivity(TextTaskActivity::class.java /*as? Class<*>*/,
-                        MainActivity.mTaskListItems[tempViewHolderPosition].id,
+        when (type) {
+            TaskListItem.TYPE_ITEM_TEXT -> {
+                view!!.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
+                        MainActivity.mTaskListItems[position].id,
                         MainActivity.TEXT_RESULT)
             }
-            ItemsAdapter.TYPE_ITEM_LIST -> {
+            TaskListItem.TYPE_ITEM_LIST -> {
                 view!!.startTaskActivity(ListTaskActivity::class.java,
-                        /*mItems!!*/MainActivity.mTaskListItems[tempViewHolderPosition].id,
+                        MainActivity.mTaskListItems[position].id,
                         MainActivity.LIST_RESULT)
             }
         }
     }
 
+
     companion object {
         var view: ActModeInterface? = null
+        var adapter: ItemsAdapterInterface? = null
 
         fun attachView(activity: ActModeInterface){
             view = activity
@@ -59,6 +51,14 @@ class RecyclerHolderPresenter(var holder: RecyclerView.ViewHolder) : View.OnLong
 
         fun detachView() {
             view = null
+        }
+
+        fun attachAdapter(itemsAdapterInterface: ItemsAdapterInterface){
+            adapter = itemsAdapterInterface
+        }
+
+        fun detachAdapter() {
+            adapter = null
         }
     }
 }

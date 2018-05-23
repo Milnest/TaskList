@@ -19,19 +19,21 @@ import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.interactor.ChangeCbColor
 import com.milnest.tasklist.interactor.JsonAdapter
+import com.milnest.tasklist.presenter.ListActInterface
+import com.milnest.tasklist.presenter.ListActivityPresenter
 
 import java.util.ArrayList
 
-class ListTaskActivity : AppCompatActivity() {
-
+class ListTaskActivity : AppCompatActivity(), ListActInterface {
     private var newCheckbox: TextView? = null
     private var mToolbar: Toolbar? = null
     //Пара значений, чекбокс и его редактируемый текст
-    private var mCheckBoxList: MutableList<Pair<*, *>>? = null
+    override var mCheckBoxList: MutableList<Pair<*, *>>? = null
     private var addListTaskLayout: LinearLayout? = null
     private var mId: Int? = null
     private var mListData: String? = null
     private var extras: Bundle? = null
+    lateinit var presenter: ListActivityPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,23 +52,18 @@ class ListTaskActivity : AppCompatActivity() {
         addListTaskLayout = findViewById<View>(R.id.add_list_task_layout) as LinearLayout
         mCheckBoxList = ArrayList()
         extras = intent.extras
-        if (extras != null) {
-            val data = extras!!.getStringArray("data")
-            mListData = data!![1]
-            val cbList = JsonAdapter.fromJson(mListData.toString()) //toString
-            mId = extras!!.getInt("id")
-            for (item in cbList.cbList!!) {
-                val cb = CheckBox(this)
-                cb.isChecked = item.isCbState
-                val cbText = EditText(this)
-                cbText.setText(item.cbText)
-                addCb(cb, cbText)
-            }
-        } else {
-            val startCb = CheckBox(this)
-            val addedCbText = EditText(this)
-            addCb(startCb, addedCbText)
-        }
+        initPresenter()
+        newCheckbox!!.setOnClickListener(presenter)
+    }
+
+    private fun initPresenter() {
+        presenter = ListActivityPresenter()
+        presenter.attachView(this)
+        presenter.startFillUsed()
+    }
+
+    override fun getStartText(): Intent?{
+        return intent
     }
 
 
@@ -76,24 +73,23 @@ class ListTaskActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        saveList()
+        //recieveList()
+        presenter.saveClicked()
         finish()
         return true
     }
 
-    fun OnClick(view: View) {
-        when (view.id) {
-            R.id.new_cb -> {
-                val addedCb = CheckBox(this)
-                val addedCbText = EditText(this)
-                addCb(addedCb, addedCbText)
-            }
-        }
+    override fun newCb() {
+        val addedCb = CheckBox(this)
+        val addedCbText = EditText(this)
+        addCb(addedCb, addedCbText)
     }
 
+    //Добавляет чекбокс с edit text и кнопкой для удаления на вывод пользователю
     private fun addCb(cbToAdd: CheckBox, cbTextToAdd: EditText) {
         ChangeCbColor.change(cbToAdd)
-        cbToAdd.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        cbToAdd.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
         val innerLayout = LinearLayout(this)
         innerLayout.orientation = LinearLayout.HORIZONTAL
         innerLayout.addView(cbToAdd)
@@ -116,32 +112,27 @@ class ListTaskActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun saveList() {
-        val data = Intent()
-        val taskCbList: ListOfCheckboxesTaskListItem
-        if (mId != null) {
-            taskCbList = ListOfCheckboxesTaskListItem(
-                    mId!!, "", TaskListItem.TYPE_ITEM_LIST,
-                    ArrayList())
-            data.putExtra(MainActivity.ID, mId!!)
-        } else {
-            taskCbList = ListOfCheckboxesTaskListItem(
-                    0, "", TaskListItem.TYPE_ITEM_LIST,
-                    ArrayList())
+    //Заполняет UI данными пришедщими с MainActivity для редактирования
+    override fun fillStart(cbList: ListOfCheckboxesTaskListItem) {
+        //Добавляет чекбоксы с текстом программно
+        for (item in cbList.cbList!!) {
+            val cb = CheckBox(this)
+            cb.isChecked = item.isCbState
+            val cbText = EditText(this)
+            cbText.setText(item.cbText)
+            addCb(cb, cbText)
         }
-        val itemList = ArrayList<CheckboxTaskListItem>()
-        for (cb in mCheckBoxList!!) {
-            if (taskCbList.cbList != null) {
-                itemList.add(CheckboxTaskListItem((cb.second as EditText).text.toString(),
-                        (cb.first as CheckBox).isChecked))
+    }
 
-            }
-        }
-        taskCbList.cbList = itemList
+    //Первичное заполнение
+    override fun firstFill(){
+        val startCb = CheckBox(this)
+        val addedCbText = EditText(this)
+        addCb(startCb, addedCbText)
+    }
 
-        //id просто игнорируется при добавлении нового активити
-        data.putExtra(MainActivity.LIST, JsonAdapter.toJson(taskCbList))
+
+    override fun recieveList(data: Intent) {
         setResult(Activity.RESULT_OK, data)
     }
 

@@ -1,5 +1,6 @@
 package com.milnest.tasklist.view
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.SearchManager
 import android.content.Context
@@ -24,6 +25,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.milnest.tasklist.R
+import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.presenter.Presenter
 import com.milnest.tasklist.presenter.PresenterInterface
@@ -49,7 +51,11 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private var builder: AlertDialog.Builder? = null
     private var searchView: SearchView? = null
     private var dialog: AlertDialog? = null
-    var dbMethodsAdapter : DBMethodsAdapter? = null
+    override var dbMethodsAdapter : DBMethodsAdapter? = null
+    private val mainPresenter = Presenter(this)
+
+    //Для результата в презентер
+    private var resAct: ResultOfActivity? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +94,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         adapter = ItemsAdapter(mTaskListItems, this)
         // устанавливаем для списка адаптер
         recyclerView!!.adapter = adapter
+        RecyclerHolderPresenter.attachAdapter(adapter)
     }
 
 
@@ -108,11 +115,13 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         initPhotoDialog()
 
         dbMethodsAdapter!!.open()
+
+        //initSearch()
     }
 
     private fun initPresenter() {
         //Init presenter
-        val mainPresenter = Presenter(this)
+        //val mainPresenter = Presenter(this)
         //DBAdapter.setDBAdapter(this)
         //val db = DBAdapter.getDBAdapter()
         //dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, db!!, adapter, this)
@@ -121,26 +130,8 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     }
 
     private fun initSearch() {
-        searchView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query != null) {
-                    dbMethodsAdapter!!.search(query)
-                    return true
-                } else {
-                    dbMethodsAdapter!!.retrieve()
-                    return true
-                }
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                dbMethodsAdapter!!.searchDynamic(newText)
-                return true
-            }
-        })
-
-        searchView!!.setOnQueryTextFocusChangeListener { v, hasFocus ->
-            dbMethodsAdapter!!.retrieve() }
-
+        searchView!!.setOnQueryTextListener(mainPresenter)
+        searchView!!.setOnQueryTextFocusChangeListener(mainPresenter)
     }
 
     /**Отображает диалог выбора места получения изображеемя
@@ -168,6 +159,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     }
 
     fun OnClick(view: View) {
+        //TODO : в презентер
         when (view.id) {
             R.id.add_task_text -> {
                 val textIntent = Intent(this, TextTaskActivity::class.java)
@@ -189,66 +181,16 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            TEXT_RESULT -> if (resultCode == Activity.RESULT_OK) {
-                val extras = data!!.extras /*if (data!!.extras != null) data.extras else null*/
-                if (extras != null) {
-                    val name = data.getStringExtra(NAME)
-                    val text = data.getStringExtra(TEXT)
-                    val get_id = data.getIntExtra(ID, -1)
-                    if (get_id != -1) {
-                        dbMethodsAdapter!!.edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT, text)
-                    } else {
-                        dbMethodsAdapter!!.save(name, ItemsAdapter.TYPE_ITEM_TEXT, text)
-                    }
-                }
-            } else {
-                Toast.makeText(this, R.string.save_canceled, Toast.LENGTH_SHORT).show()
-            }
-            CAMERA_RESULT -> try {
-                val thumbnail = data!!.extras!!.get("data") as Bitmap
-                val imageString = bitmapToBase64(thumbnail)
-                dbMethodsAdapter!!.save("1", ItemsAdapter.TYPE_ITEM_IMAGE, imageString)
-            } catch (ex: NullPointerException) {
-                Toast.makeText(this, "Фото не сделано", Toast.LENGTH_SHORT).show()
-            }
+        saveResult(ResultOfActivity(requestCode, resultCode, data))
+        mainPresenter.resultActivityRecieved()
+    }
 
-            GALLERY_RESULT -> {
-                val imageUri: Uri?
-                val imageStream: InputStream?
-                try {
-                    imageUri = data!!.data
-                    imageStream = contentResolver.openInputStream(imageUri!!)
-                    val selectedImage = BitmapFactory.decodeStream(imageStream)
-                    val imgString = bitmapToBase64(selectedImage)
-                    dbMethodsAdapter!!.save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString)
-                } catch (e: FileNotFoundException) {
-                    Toast.makeText(this, "Изображение не получено",
-                            Toast.LENGTH_SHORT).show()
-                } catch (ex: NullPointerException) {
-                    Toast.makeText(this, "Изображение не получено",
-                            Toast.LENGTH_SHORT).show()
-                } catch (exc: SQLException) {
-                    Toast.makeText(this, "Некорректное изображение",
-                            Toast.LENGTH_SHORT).show()
-                }
+    private fun saveResult(res : ResultOfActivity) {
+        resAct = res
+    }
 
-            }
-            LIST_RESULT -> if (resultCode == Activity.RESULT_OK) {
-                val extras = data!!.extras
-                if (extras != null) {
-                    val text = data.getStringExtra(LIST)
-                    val get_id = data.getIntExtra(ID, -1)
-                    if (get_id != -1) {
-                        dbMethodsAdapter!!.edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text)
-                    } else {
-                        dbMethodsAdapter!!.save("", ItemsAdapter.TYPE_ITEM_LIST, text)
-                    }
-
-                }
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
+    override fun getResult() : ResultOfActivity?{
+        return resAct
     }
 
     //Преобразует картинку в Base64 для хранения в БД
@@ -259,8 +201,8 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         return imgString
     }
 
-    override fun showToast(toShow: String) {
-        Toast.makeText(this, toShow, Toast.LENGTH_SHORT).show()
+    override fun showToast(toShow: Int) {
+        Toast.makeText(this, getString(toShow), Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
@@ -300,6 +242,8 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         private val CAMERA_RESULT = 2
         private val GALLERY_RESULT = 3
         val LIST_RESULT = 4
+
+        @SuppressLint("StaticFieldLeak")
         lateinit var activity: MainActivity
     }
 

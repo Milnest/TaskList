@@ -1,7 +1,6 @@
-package com.milnest.tasklist.view
+package com.milnest.tasklist.presentation.element
 
 import android.content.Context
-import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.Menu
@@ -13,14 +12,14 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.milnest.tasklist.R
+import com.milnest.tasklist.application.app
 import com.milnest.tasklist.entities.ImgTaskListItem
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.interactor.ChangeCbColor
-import com.milnest.tasklist.interactor.DBMethodsAdapter
-import com.milnest.tasklist.presenter.ItemsAdapterInterface
-import com.milnest.tasklist.presenter.RecyclerHolderPresenter
+import com.milnest.tasklist.interactor.TaskDataInteractor
+import com.milnest.tasklist.presentation.main.MainActivity
 
 import java.util.ArrayList
 
@@ -31,18 +30,15 @@ import java.util.ArrayList
 class ItemsAdapter
 //For activity
 
-(private val mItems: List<TaskListItem>?, context: Context) :
+(private val mItems: List<TaskListItem>?) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemsAdapterInterface {
-    private val mInflater: LayoutInflater
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
-    private val dbMethodsAdapter : DBMethodsAdapter
-    //private var tempViewHolderPosition: Int = 0
+    private val taskDataInteractor : TaskDataInteractor
 
     init {
         mViewHolderList = ArrayList()
-        mInflater = LayoutInflater.from(context)
-        dbMethodsAdapter = DBMethodsAdapter.getDBMethodsAdapter()
+        taskDataInteractor = TaskDataInteractor.getDBMethodsAdapter()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
@@ -58,11 +54,6 @@ class ItemsAdapter
                 tempViewHolder = TextItemHolder(v)
                 val tempTextHolder: TextItemHolder = tempViewHolder as TextItemHolder;
                 //mViewHolderList.add(tempTextHolder)
-                //mViewHolderList.add(tempTextHolder.adapterPosition, tempTextHolder)
-                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempTextHolder))
-                v.setOnClickListener(RecyclerHolderPresenter(tempTextHolder))*/
-                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition))
-                v.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition))*/
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_IMAGE -> {
@@ -71,10 +62,6 @@ class ItemsAdapter
                 tempViewHolder = ImgItemHolder(v)
                 val tempImgHolder: ImgItemHolder = tempViewHolder as ImgItemHolder;
                 //mViewHolderList.add(tempImgHolder)
-                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempImgHolder))
-                v.setOnClickListener(RecyclerHolderPresenter(tempImgHolder))*/
-                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition))
-                v.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition))*/
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_LIST -> {
@@ -84,11 +71,6 @@ class ItemsAdapter
                 val tempListHolder: CheckboxListItemHolder =
                         tempViewHolder as CheckboxListItemHolder
                 //mViewHolderList.add(tempListHolder)
-                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempListHolder))
-
-                v.setOnClickListener(RecyclerHolderPresenter(tempListHolder))*/
-                /*v.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition))
-                v.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition))*/
                 return tempViewHolder
             }
             else -> return null
@@ -140,7 +122,7 @@ class ItemsAdapter
                     val cbText = TextView(layout.context)
                     cbText.setPadding(0, 0, 0, 10)
                     cbText.text = item.cbText
-                    cbText.setTextColor(mInflater.context.resources
+                    cbText.setTextColor(app.context.resources
                             .getColor(R.color.lum_red))
                     cbText.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                     cbText.isClickable = false
@@ -167,13 +149,6 @@ class ItemsAdapter
             //}
         }
         return 0
-    }
-
-    //Удаляет задачу по позиции
-    internal fun removeItem(position: Int) {
-        val activity = mInflater.context as MainActivity
-        dbMethodsAdapter!!.delete(position)
-        //TODO : ТУТ И ВО ВСЕХ ПОДОБНЫХ МЕСТАХ ПЕРЕВЕСТИ ЛОГИКУ С АКТИВИТИ НА ПРЕЗЕНТЕР
     }
 
 
@@ -236,33 +211,8 @@ class ItemsAdapter
         }
     }
 
-    //TODO : вынести в презентер!
-    fun initActionMode() {
-        val activity = mInflater.context as MainActivity
-        activity.mActionModeCallback = object : android.support.v7.view.ActionMode.Callback {
-            override fun onCreateActionMode(mode: android.support.v7.view.ActionMode, menu: Menu): Boolean {
-                val inflater = mode.menuInflater
-                inflater.inflate(R.menu.menu_context_task, menu)
-                return true
-            }
-
-            override fun onPrepareActionMode(mode: android.support.v7.view.ActionMode, menu: Menu): Boolean {
-                return false
-            }
-
-            override fun onActionItemClicked(mode: android.support.v7.view.ActionMode,
-                                             item: MenuItem): Boolean {
-                removeItem(mItems!![tempViewHolderPosition].id)
-                activity.mActionMode!!.finish()
-                return false
-            }
-
-            override fun onDestroyActionMode(mode: android.support.v7.view.ActionMode) {
-                removeSelection()
-                activity.mActionMode = null
-            }
-
-        }
+    override fun retrieveAdapter(){
+        notifyDataSetChanged()
     }
 
     companion object {

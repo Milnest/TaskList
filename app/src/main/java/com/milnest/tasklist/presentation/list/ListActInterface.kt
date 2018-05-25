@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presenter
+package com.milnest.tasklist.presentation.list
 
 import android.content.Intent
 import android.util.Pair

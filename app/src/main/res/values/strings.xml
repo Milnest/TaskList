@@ -2,8 +2,8 @@
     <string name="app_name">TaskList</string>
     <string name="split">В 2 колонки</string>
     <string name="delete">Удалить</string>
-    <string name="delete_canceled"></string>
-    <string name="delete_OK">Данные сохранены</string>
+    <string name="delete_canceled">Задача не удалена</string>
+    <string name="delete_OK">Задача удалена</string>
     <string name="title_add_task_text">Новый текст</string>
     <string name="title_add_task_photo">Новое фото</string>
     <string name="title_add_task_list">Новый список</string>
@@ -23,4 +23,7 @@
     <string name="image_chanceled">Изображение не получено</string>
     <string name="translate_completed">Перевод завершён!</string>
     <string name="translate_fail">Ошибка перевода!</string>
+    <string name="no_external">Нет доступа к хранилищу</string>
+    <string name="task_changed">Задача изменена</string>
+    <string name="task_chanceled">Ошибка изменения</string>
 </resources>

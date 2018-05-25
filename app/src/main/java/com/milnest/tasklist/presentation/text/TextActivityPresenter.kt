@@ -1,18 +1,18 @@
-package com.milnest.tasklist.presenter
+package com.milnest.tasklist.presentation.text
 
 import android.content.Intent
 import android.os.AsyncTask
-import android.widget.Toast
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.interactor.YandexTranslate
-import com.milnest.tasklist.view.MainActivity
-import com.milnest.tasklist.view.TextTaskActivity
+import com.milnest.tasklist.presentation.main.MainActivity
+import com.milnest.tasklist.presentation.text.TextActInterface
 import java.io.IOException
 
 class TextActivityPresenter {
 
     var textId : Int? = null
+    /*lateinit var textId : Int*/
     fun startFillUsed(){
         setStartText()
     }

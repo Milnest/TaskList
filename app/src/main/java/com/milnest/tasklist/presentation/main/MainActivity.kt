@@ -1,17 +1,11 @@
-package com.milnest.tasklist.view
+package com.milnest.tasklist.presentation.main
 
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.SearchManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.database.SQLException
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -27,21 +21,19 @@ import android.widget.Toast
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
-import com.milnest.tasklist.presenter.Presenter
-import com.milnest.tasklist.presenter.PresenterInterface
-import com.milnest.tasklist.repository.DBAdapter
-import com.milnest.tasklist.interactor.DBMethodsAdapter
-import com.milnest.tasklist.presenter.ActModeInterface
-import com.milnest.tasklist.presenter.RecyclerHolderPresenter
+import com.milnest.tasklist.interactor.TaskDataInteractor
+import com.milnest.tasklist.presentation.element.ActModeInterface
+import com.milnest.tasklist.presentation.element.RecyclerHolderPresenter
+import com.milnest.tasklist.presentation.element.ItemsAdapter
+import com.milnest.tasklist.presentation.list.ListTaskActivity
+import com.milnest.tasklist.presentation.text.TextTaskActivity
 
 import java.io.ByteArrayOutputStream
-import java.io.FileNotFoundException
-import java.io.InputStream
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
 
-    private var recyclerView: RecyclerView? = null
+    private lateinit var recyclerView: RecyclerView
     private var mToolbar: Toolbar? = null
     private val mGridManager = GridLayoutManager(this, 2)
     private val mLinearLayoutManager = LinearLayoutManager(this)
@@ -51,7 +43,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private var builder: AlertDialog.Builder? = null
     private var searchView: SearchView? = null
     private var dialog: AlertDialog? = null
-    override var dbMethodsAdapter : DBMethodsAdapter? = null
+    override var taskDataInteractor : TaskDataInteractor? = null
     private val mainPresenter = Presenter(this)
 
     //Для результата в презентер
@@ -60,7 +52,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        activity = this
         setInitialData()
     }
 
@@ -91,12 +82,11 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private fun initRecyclerView() {
         recyclerView = findViewById<View>(R.id.recycler_view) as RecyclerView
         // создаем адаптер
-        adapter = ItemsAdapter(mTaskListItems, this)
+        adapter = ItemsAdapter(taskDataInteractor!!.taskList)
         // устанавливаем для списка адаптер
         recyclerView!!.adapter = adapter
         RecyclerHolderPresenter.attachAdapter(adapter)
     }
-
 
     /**Заполняет Recycler тестовыми данными и инициализирует View */
     private fun setInitialData() {
@@ -109,12 +99,14 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         RecyclerHolderPresenter.attachView(this)
         //Recycler data
         initRecyclerView()
-        adapter.initActionMode()
+        taskDataInteractor!!.registerObserver(RecyclerHolderPresenter)
+        //adapter.initActionMode()
+        mActionModeCallback = RecyclerHolderPresenter
         //Layout Manager init
-        recyclerView!!.layoutManager = mLinearLayoutManager
+        recyclerView.layoutManager = mLinearLayoutManager
         initPhotoDialog()
 
-        dbMethodsAdapter!!.open()
+        //taskDataInteractor!!.open()
 
         //initSearch()
     }
@@ -122,11 +114,12 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private fun initPresenter() {
         //Init presenter
         //val mainPresenter = Presenter(this)
-        //DBAdapter.setDBAdapter(this)
-        //val db = DBAdapter.getDBAdapter()
-        //dbMethodsAdapter = DBMethodsAdapter(mTaskListItems, db!!, adapter, this)
-        DBMethodsAdapter.setDBMethodsAdapter(this)
-        dbMethodsAdapter = DBMethodsAdapter.getDBMethodsAdapter()
+        //DBRepository.setDBAdapter(this)
+        //val db = DBRepository.getDBRepository()
+        //taskDataInteractor = TaskDataInteractor(mTaskListItems, db!!, adapter, this)
+        //TaskDataInteractor.setDBMethodsAdapter(/*this*/)
+        taskDataInteractor = TaskDataInteractor.getDBMethodsAdapter()
+        taskDataInteractor!!.registerObserver(mainPresenter)
     }
 
     private fun initSearch() {
@@ -141,8 +134,15 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         builder!!.setTitle("Добавление фото")
                 .setMessage("Выберите источник")
                 .setPositiveButton("Сделать новое") { dialog, id ->
-                    val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                    startActivityForResult(cameraIntent, CAMERA_RESULT)
+                    mainPresenter.photoClicked()
+                    /*val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+                    val file = File(Environment.getExternalStorageDirectory(), "pic.jpg")
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file))
+
+                    filePhoto = file
+                    mainPresenter.photoClicked()
+                    startActivityForResult(cameraIntent, CAMERA_RESULT)*/
                 }
                 .setNegativeButton("Взять из галереи") { dialog, id ->
                     //Вызываем стандартную галерею для выбора изображения с помощью
@@ -157,6 +157,11 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         dialog = builder!!.create()
 
     }
+
+    override fun startPhotoActivity(cameraIntent: Intent) {
+        startActivityForResult(cameraIntent, CAMERA_RESULT)
+    }
+
 
     fun OnClick(view: View) {
         //TODO : в презентер
@@ -207,12 +212,12 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
 
     override fun onResume() {
         super.onResume()
-        dbMethodsAdapter!!.retrieve();
+        taskDataInteractor!!.retrieve();
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        dbMethodsAdapter!!.close()
+        //taskDataInteractor!!.close()
     }
 
     override fun showActionBar(title: Int) {
@@ -226,14 +231,14 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
 
     override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
         val intentChange = Intent(this, activityClass)
-        intentChange.putExtra("data", dbMethodsAdapter!!.getById(itemId))
+        intentChange.putExtra("data", taskDataInteractor!!.getById(itemId))
         intentChange.putExtra("id", itemId)
         startActivityForResult(intentChange, actResType)
     }
 
     companion object {
 
-        var mTaskListItems: MutableList<TaskListItem> = ArrayList()
+        //var mTaskListItems: MutableList<TaskListItem> = ArrayList()
         val NAME = "NAME"
         val TEXT = "TEXT"
         val ID = "ID"
@@ -242,9 +247,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         private val CAMERA_RESULT = 2
         private val GALLERY_RESULT = 3
         val LIST_RESULT = 4
-
-        @SuppressLint("StaticFieldLeak")
-        lateinit var activity: MainActivity
     }
 
 }

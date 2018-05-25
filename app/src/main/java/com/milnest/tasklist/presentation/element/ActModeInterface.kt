@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presenter
+package com.milnest.tasklist.presentation.element
 
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.view.ActionMode

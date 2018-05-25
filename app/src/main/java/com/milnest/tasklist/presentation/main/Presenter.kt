@@ -1,28 +1,30 @@
-package com.milnest.tasklist.presenter
+package com.milnest.tasklist.presentation.main
 
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.database.SQLException
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.Intent
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.View
-import android.widget.SearchView
-import android.widget.Toast
 import com.milnest.tasklist.R
+import com.milnest.tasklist.entities.ObserverInterfaces.Observer
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
-import com.milnest.tasklist.interactor.DBMethodsAdapter
-import com.milnest.tasklist.view.ItemsAdapter
-import com.milnest.tasklist.view.MainActivity
-import java.io.FileNotFoundException
-import java.io.InputStream
-import java.util.ArrayList
+import com.milnest.tasklist.interactor.PhotoInteractor
+import com.milnest.tasklist.interactor.TaskDataInteractor
+import com.milnest.tasklist.presentation.element.ItemsAdapter
+import java.io.File
 
 class Presenter(val activity: PresenterInterface) :
-        android.support.v7.widget.SearchView.OnQueryTextListener, View.OnFocusChangeListener/*,
-        android.support.v7.view.ActionMode.Callback*/ {
+        android.support.v7.widget.SearchView.OnQueryTextListener, View.OnFocusChangeListener,
+        Observer{
+
+    val dbMethodsAdapter = TaskDataInteractor.getDBMethodsAdapter()
+    lateinit var photoFile : File
+
+    override fun update(notifObject : Any?) {
+        if(notifObject is Int) toastToActivity(notifObject)
+    }
 
     fun toastToActivity(toShow : Int) {
         activity.showToast(toShow);
@@ -31,21 +33,21 @@ class Presenter(val activity: PresenterInterface) :
 
 
     override fun onFocusChange(v: View?, hasFocus: Boolean) {
-        activity.dbMethodsAdapter!!.retrieve()
+        dbMethodsAdapter.retrieve()
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
         if (query != null) {
-            activity.dbMethodsAdapter!!.search(query)
+            dbMethodsAdapter.search(query)
             return true
         } else {
-            activity.dbMethodsAdapter!!.retrieve()
+            dbMethodsAdapter.retrieve()
             return true
         }
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
-        activity.dbMethodsAdapter!!.searchDynamic(newText)
+        dbMethodsAdapter.searchDynamic(newText)
         return true
     }
 
@@ -63,10 +65,10 @@ class Presenter(val activity: PresenterInterface) :
                     val text = result.data.getStringExtra(TEXT)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        activity.dbMethodsAdapter!!.edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT,
+                        dbMethodsAdapter.edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT,
                                 text)
                     } else {
-                        activity.dbMethodsAdapter!!.save(name, ItemsAdapter.TYPE_ITEM_TEXT, text)
+                        dbMethodsAdapter.save(name, ItemsAdapter.TYPE_ITEM_TEXT, text)
                     }
                     //initRecyclerView()
                 }
@@ -78,13 +80,36 @@ class Presenter(val activity: PresenterInterface) :
                 /*try {
                     val thumbnail = result.data!!.extras!!.get("data") as Bitmap
                     val imageString = bitmapToBase64(thumbnail)
-                    activity.dbMethodsAdapter!!.save("1", ItemsAdapter.TYPE_ITEM_IMAGE,
+                    activity.taskDataInteractor!!.save("1", ItemsAdapter.TYPE_ITEM_IMAGE,
                             imageString)
                     //initRecyclerView()
                 } catch (ex: NullPointerException) {
                     toastToActivity(R.string.photo_chanceled)
                 }*/
-            }
+
+                /*val file = File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_PICTURES), "pic.jpg")
+                if (!file.mkdirs()) {
+                    toastToActivity(R.string.no_external)
+                }*/
+                try {
+                    //TODO получать файлик
+                    /*val uri = result.data!!.extras!!.get(MediaStore.EXTRA_OUTPUT) as Uri
+                    val file : File = File(uri.path)*/
+                    //val file = File(Environment.getExternalStorageDirectory().path, "pic.jpg")
+                    /*val uri = Uri.fromFile(file)
+                    val bitmap = MediaStore.Images.Media.getBitmap(app.context.contentResolver, uri)
+                    */
+                    dbMethodsAdapter.save("", TaskListItem.TYPE_ITEM_IMAGE,
+                            photoFile.canonicalPath)
+
+                }
+                catch (ex : Exception){
+                    toastToActivity(R.string.no_external)
+                }
+                /*val file = result.data!!.extras!!.get("data") as File
+                taskDataInteractor.save("", TaskListItem.TYPE_ITEM_IMAGE, file.canonicalPath)
+*/            }
 
             GALLERY_RESULT -> {
                 //TODO: сохранение через внешнее хранилище
@@ -95,7 +120,7 @@ class Presenter(val activity: PresenterInterface) :
                     imageStream = contentResolver.openInputStream(imageUri!!)
                     val selectedImage = BitmapFactory.decodeStream(imageStream)
                     val imgString = bitmapToBase64(selectedImage)
-                    dbMethodsAdapter!!.save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString)
+                    taskDataInteractor!!.save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString)
                     //initRecyclerView()
                 } catch (e: FileNotFoundException) {
                     Toast.makeText(this, "Изображение не получено",
@@ -114,15 +139,30 @@ class Presenter(val activity: PresenterInterface) :
                     val text = result.data.getStringExtra(LIST)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        activity.dbMethodsAdapter!!.edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text)
+                        dbMethodsAdapter.edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text)
                     } else {
-                        activity.dbMethodsAdapter!!.save("", ItemsAdapter.TYPE_ITEM_LIST, text)
+                        dbMethodsAdapter.save("", ItemsAdapter.TYPE_ITEM_LIST, text)
                     }
 
                 }
             }
         }
     }
+
+    fun photoClicked() {
+        savePhoto()
+    }
+
+    private fun savePhoto() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        photoFile = PhotoInteractor.createFilePath()
+        /*= File(Environment.getExternalStorageDirectory(), "pic.jpg")*/
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile))
+
+        activity.startPhotoActivity(cameraIntent)
+    }
+
 
     companion object {
 

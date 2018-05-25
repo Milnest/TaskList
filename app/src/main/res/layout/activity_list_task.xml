@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".view.ListTaskActivity">
+    tools:context=".presentation.list.ListTaskActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar_task"
@@ -26,7 +26,7 @@
         android:layout_height="match_parent"
         android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".view.ListTaskActivity"
+        tools:context=".presentation.list.ListTaskActivity"
         tools:showIn="@layout/activity_list_task">
 
         <android.support.constraint.ConstraintLayout

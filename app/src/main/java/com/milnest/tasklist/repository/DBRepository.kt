@@ -13,8 +13,8 @@ import com.milnest.tasklist.db.TaskDatabaseHelper
  * Created by t-yar on 21.04.2018.
  */
 
-class DBAdapter private constructor(internal var c: Context) {
-    internal lateinit var db: SQLiteDatabase
+class DBRepository private constructor(internal var c: Context) {
+    internal var db: SQLiteDatabase
     internal var helper: TaskDatabaseHelper
 
     //RETRIEVE ALL TASKS
@@ -27,10 +27,11 @@ class DBAdapter private constructor(internal var c: Context) {
 
     init {
         helper = TaskDatabaseHelper(c)
+        db = helper.writableDatabase
     }
 
     //OPEN DB
-    fun openDB(): DBAdapter {
+    fun openDB(): DBRepository {
         try {
             db = helper.writableDatabase
         } catch (e: SQLException) {
@@ -129,14 +130,14 @@ class DBAdapter private constructor(internal var c: Context) {
     }
 
     companion object {
-        /*private var dbAdapter: DBAdapter? = null
+        /*private var DB_REPOSITORY: DBRepository? = null
         fun setDBAdapter(con: Context){
-            if(dbAdapter == null) {
-                dbAdapter = DBAdapter(con)
+            if(DB_REPOSITORY == null) {
+                DB_REPOSITORY = DBRepository(con)
             }
         }*/
-        private val dbAdapter: DBAdapter = DBAdapter(app.context)
-        fun getDBAdapter() = dbAdapter
+        private val DB_REPOSITORY: DBRepository = DBRepository(app.context)
+        fun getDBRepository() = DB_REPOSITORY
     }
 
 }

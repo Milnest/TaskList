@@ -1,4 +1,4 @@
-package com.milnest.tasklist.view
+package com.milnest.tasklist.presentation.text
 
 import android.app.Activity
 import android.content.Intent
@@ -14,8 +14,6 @@ import android.widget.Toast
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.interactor.YandexTranslate
-import com.milnest.tasklist.presenter.TextActInterface
-import com.milnest.tasklist.presenter.TextActivityPresenter
 
 import java.io.IOException
 

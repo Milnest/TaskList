@@ -1,53 +1,48 @@
 package com.milnest.tasklist.interactor
 
 import android.database.Cursor
-import android.graphics.BitmapFactory
-import android.util.Base64
-import com.milnest.tasklist.*
-import com.milnest.tasklist.application.app
+import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ImgTaskListItem
+import com.milnest.tasklist.entities.ObserverInterfaces.Observable
+import com.milnest.tasklist.entities.ObserverInterfaces.Observer
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.entities.TextTaskListItem
-import com.milnest.tasklist.presenter.Presenter
-import com.milnest.tasklist.repository.DBAdapter
-import com.milnest.tasklist.view.ItemsAdapter
-import com.milnest.tasklist.view.MainActivity
+import com.milnest.tasklist.presentation.element.ItemsAdapter
+import com.milnest.tasklist.repository.DBRepository
 
 /**
  * Created by t-yar on 22.04.2018.
  */
 
-/**Класс для обобщения работы с базой данных
- */
-class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListItem>,
-                                           val db: DBAdapter, val activity: MainActivity) {
+class TaskDataInteractor private constructor() :
+        Observable {
 
-    fun open(){
-        db.openDB()
+    private var observersList : MutableList<Observer> = ArrayList()
+
+    val db: DBRepository = DBRepository.getDBRepository()
+    var taskList : MutableList<TaskListItem> = ArrayList()
+
+    override fun registerObserver(o: Observer) {
+        observersList.add(o)
     }
 
-    fun close(){
-        db.close()
+    override fun removeObserver(o: Observer) {
+        observersList.remove(o)
+        //observer = null
+    }
+
+    override fun notifyObservers(notifObject : Any?) {
+        for (o in observersList) o.update(notifObject)
     }
 
     fun retrieve() {
-
         taskList.clear()
-
-        //SELECT
         val c = db.allTasks
-
-        //DATA ADDING TO ARRAYLIST
         showItems(c)
-
     }
 
-    /**Отображает список задач, согласно текущим условиям(в том числе и для поиска)
-     */
     private fun showItems(c: Cursor) {
-//        taskAdapter.notifyDataSetChanged()
-        activity.adapter.notifyDataSetChanged()
-        //вместо верхней строчки обращение к презентеру
+        notifyObservers(true)
 
         while (c.moveToNext()) {
             val id = c.getInt(0)
@@ -58,9 +53,11 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
             when (type) {
                 ItemsAdapter.TYPE_ITEM_TEXT -> taskList.add(TextTaskListItem(id, name, content))
                 ItemsAdapter.TYPE_ITEM_IMAGE -> {
-                    val bytes = Base64.decode(content, Base64.DEFAULT)
+                    //taskList.add(ImgTaskListItem(id, name, BitmapFactory.decodeFile(content)))
+                    taskList.add(ImgTaskListItem(id, name, PhotoInteractor.createImage(content)))
+                    /*val bytes = Base64.decode(content, Base64.DEFAULT)
                     taskList.add(ImgTaskListItem(id, name,
-                            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)))
+                            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)))*/
                 }
                 ItemsAdapter.TYPE_ITEM_LIST -> {
                     val cbList = JsonAdapter.fromJson(content)
@@ -81,8 +78,10 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
         val result = db.add(name, type, content)
 
         if (result > 0) {
+            notifyObservers(R.string.save_OK)
 //            Toast.makeText(this, "Задача добавлена!", Toast.LENGTH_SHORT).show()
         } else {
+            notifyObservers(R.string.save_canceled)
 //            Toast.makeText(this, "Ошибка добавления!", Toast.LENGTH_SHORT).show()
         }
 
@@ -99,11 +98,9 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
         val result = db.Delete(id)
 
             if (result > 0) {
-                Presenter(activity).toastToActivity(R.string.delete_OK)
-//            Toast.makeText(this, "Задача успешно удалена!", Toast.LENGTH_SHORT).show()
+                notifyObservers(R.string.delete_OK)
             } else {
-                Presenter(activity).toastToActivity(R.string.delete_canceled)
-//            Toast.makeText(this, "Ошибка удаления!", Toast.LENGTH_SHORT).show()
+                notifyObservers(R.string.delete_canceled)
             }
 
         //refresh
@@ -142,9 +139,9 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
         val result = db.UPDATE(id, name, type, content)
 
         if (result > 0) {
-//            Toast.makeText(this, "Задача изменена!", Toast.LENGTH_SHORT).show()
+            notifyObservers(R.string.task_changed)
         } else {
-//            Toast.makeText(this, "Ошибка изменения!", Toast.LENGTH_SHORT).show()
+            notifyObservers(R.string.task_chanceled)
         }
 
         //refresh
@@ -169,15 +166,12 @@ class DBMethodsAdapter private constructor(var taskList : MutableList<TaskListIt
     }
 
     companion object {
-        /*private var dbMethodsAdapter: DBMethodsAdapter = DBMethodsAdapter(
-                MainActivity.mTaskListItems, DBAdapter.getDBAdapter(), app.context as MainActivity)*/
-        private var dbMethodsAdapter: DBMethodsAdapter? = null
-        fun setDBMethodsAdapter(activity: MainActivity){
-            if(dbMethodsAdapter == null) {
-                dbMethodsAdapter = DBMethodsAdapter(MainActivity.mTaskListItems,
-                        DBAdapter.getDBAdapter()!!, activity)
+        private var taskDataInteractor: TaskDataInteractor? = null
+        fun getDBMethodsAdapter(): TaskDataInteractor{
+            if(taskDataInteractor == null) {
+                taskDataInteractor = TaskDataInteractor()
             }
+            return taskDataInteractor!!
         }
-        fun getDBMethodsAdapter() = dbMethodsAdapter!!
     }
 }

@@ -1,4 +1,4 @@
-package com.milnest.tasklist.interactor
+package com.milnest.tasklist.other.utils
 
 import android.content.res.ColorStateList
 import android.support.v4.widget.CompoundButtonCompat

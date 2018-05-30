@@ -8,7 +8,7 @@ import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.CheckboxTaskListItem
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
-import com.milnest.tasklist.interactor.JsonAdapter
+import com.milnest.tasklist.other.utils.JsonAdapter
 import com.milnest.tasklist.presentation.main.MainActivity
 import java.util.ArrayList
 

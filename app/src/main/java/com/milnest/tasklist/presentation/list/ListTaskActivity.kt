@@ -15,9 +15,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
-import com.milnest.tasklist.interactor.ChangeCbColor
-import com.milnest.tasklist.presentation.list.ListActInterface
-import com.milnest.tasklist.presentation.list.ListActivityPresenter
+import com.milnest.tasklist.other.utils.ChangeCbColor
 
 import java.util.ArrayList
 

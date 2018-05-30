@@ -1,4 +1,4 @@
-package com.milnest.tasklist.interactor
+package com.milnest.tasklist.other.utils
 
 import com.google.gson.GsonBuilder
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
@@ -9,8 +9,7 @@ import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
  */
 
 object JsonAdapter {
-    private val builder = GsonBuilder()
-    private val gson = builder.create()
+    private val gson = GsonBuilder().create()
 
     fun toJson(listItem: ListOfCheckboxesTaskListItem): String {
         return gson.toJson(listItem)
@@ -18,6 +17,6 @@ object JsonAdapter {
 
 
     fun fromJson(jsonString: String): ListOfCheckboxesTaskListItem {
-        return gson.fromJson(jsonString, ListOfCheckboxesTaskListItem::class.java!!)
+        return gson.fromJson(jsonString, ListOfCheckboxesTaskListItem::class.java)
     }
 }

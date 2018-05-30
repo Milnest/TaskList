@@ -1,4 +1,4 @@
-package com.milnest.tasklist.interactor
+package com.milnest.tasklist.other.utils
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

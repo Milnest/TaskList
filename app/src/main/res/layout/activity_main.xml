@@ -58,7 +58,7 @@
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_add_task_text"
                     android:contentDescription="@string/title_add_task_text"
-                    android:onClick="OnClick"/>
+                    android:onClick="addButtonClicked"/>
 
                 <ImageButton
                     android:id="@+id/add_task_photo"
@@ -69,7 +69,7 @@
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_add_task_photo"
                     android:contentDescription="@string/title_add_task_photo"
-                    android:onClick="OnClick"/>
+                    android:onClick="onClick"/>
 
                 <ImageButton
                     android:id="@+id/add_task_list"
@@ -80,7 +80,7 @@
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_add_task_list"
                     android:contentDescription="@string/title_add_task_list"
-                    android:onClick="OnClick"/>
+                    android:onClick="onClick"/>
             </LinearLayout>
 
 </LinearLayout>

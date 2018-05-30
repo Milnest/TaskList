@@ -1,10 +1,7 @@
 package com.milnest.tasklist.presentation.element
 
-import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -17,28 +14,24 @@ import com.milnest.tasklist.entities.ImgTaskListItem
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.entities.TextTaskListItem
-import com.milnest.tasklist.interactor.ChangeCbColor
-import com.milnest.tasklist.interactor.TaskDataInteractor
-import com.milnest.tasklist.presentation.main.MainActivity
-
-import java.util.ArrayList
+import com.milnest.tasklist.other.utils.ChangeCbColor
+import com.milnest.tasklist.repository.DBRepository
+import java.util.*
 
 /**
  * Created by t-yar on 17.04.2018.
  */
 
-class ItemsAdapter
-//For activity
-
-(private val mItems: List<TaskListItem>?) :
+class ItemsAdapter :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemsAdapterInterface {
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
-    private val taskDataInteractor : TaskDataInteractor
+    private val dataRep : DBRepository
+    private var mItems: List<TaskListItem>? = null
 
     init {
         mViewHolderList = ArrayList()
-        taskDataInteractor = TaskDataInteractor.getDBMethodsAdapter()
+        dataRep = DBRepository.getDBRepository()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
@@ -50,10 +43,8 @@ class ItemsAdapter
             TaskListItem.TYPE_ITEM_TEXT -> {
                 v = LayoutInflater.from(parent.context).inflate(R.layout.text_task_list_item,
                         parent, false)
-                //val x: String? = y as String?
                 tempViewHolder = TextItemHolder(v)
                 val tempTextHolder: TextItemHolder = tempViewHolder as TextItemHolder;
-                //mViewHolderList.add(tempTextHolder)
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_IMAGE -> {
@@ -61,7 +52,6 @@ class ItemsAdapter
                         parent, false)
                 tempViewHolder = ImgItemHolder(v)
                 val tempImgHolder: ImgItemHolder = tempViewHolder as ImgItemHolder;
-                //mViewHolderList.add(tempImgHolder)
                 return tempViewHolder
             }
             TaskListItem.TYPE_ITEM_LIST -> {
@@ -70,7 +60,6 @@ class ItemsAdapter
                 tempViewHolder = CheckboxListItemHolder(v)
                 val tempListHolder: CheckboxListItemHolder =
                         tempViewHolder as CheckboxListItemHolder
-                //mViewHolderList.add(tempListHolder)
                 return tempViewHolder
             }
             else -> return null
@@ -143,7 +132,7 @@ class ItemsAdapter
 
     override fun getItemViewType(position: Int): Int {
         if (mItems != null) {
-            val taskListItem = mItems[position]
+            val taskListItem = mItems!![position]
             //if (taskListItem != null) {
                 return taskListItem.type
             //}
@@ -185,23 +174,14 @@ class ItemsAdapter
         }
     }
 
-    //Выделяет задачу
-    /*override fun addSelection(viewHolder: RecyclerView.ViewHolder) {
-        //mViewHolderList.get(tempViewHolderPosition);
-        viewHolder.itemView.setBackgroundResource(R.color.black)
-        tempViewHolderPosition = viewHolder.adapterPosition
-        mItems!![tempViewHolderPosition].isSelected = true
-    }*/
-
     override fun addSelection(position: Int) {
         tempViewHolderPosition = position
-        var viewHolder = mViewHolderList.get(tempViewHolderPosition);
+        val viewHolder = mViewHolderList.get(tempViewHolderPosition);
         viewHolder.itemView.setBackgroundResource(R.color.black)
         //tempViewHolderPosition = viewHolder.adapterPosition
         mItems!![tempViewHolderPosition].isSelected = true
     }
-
-    //Снимает выделение задачи
+    
     override fun removeSelection() {
         for (item in mItems!!) {
             item.isSelected = false
@@ -211,14 +191,16 @@ class ItemsAdapter
         }
     }
 
+    override fun setData(data : List<TaskListItem>){
+        mItems = data
+        notifyDataSetChanged()
+    }
+
     override fun retrieveAdapter(){
         notifyDataSetChanged()
     }
 
     companion object {
-        val TYPE_ITEM_TEXT = 0
-        val TYPE_ITEM_IMAGE = 1
-        val TYPE_ITEM_LIST = 2
         var tempViewHolderPosition: Int = 0
     }
 }

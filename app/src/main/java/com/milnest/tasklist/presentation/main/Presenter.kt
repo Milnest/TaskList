@@ -1,53 +1,86 @@
 package com.milnest.tasklist.presentation.main
 
 import android.app.Activity
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
 import android.provider.MediaStore
+import android.support.v7.app.AlertDialog
 import android.view.View
 import com.milnest.tasklist.R
-import com.milnest.tasklist.entities.ObserverInterfaces.Observer
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
-import com.milnest.tasklist.interactor.PhotoInteractor
-import com.milnest.tasklist.interactor.TaskDataInteractor
-import com.milnest.tasklist.presentation.element.ItemsAdapter
+import com.milnest.tasklist.other.utils.PhotoInteractor
+import com.milnest.tasklist.presentation.element.ItemsAdapterInterface
+import com.milnest.tasklist.presentation.list.ListTaskActivity
+import com.milnest.tasklist.presentation.text.TextTaskActivity
+import com.milnest.tasklist.repository.DBRepository
 import java.io.File
 
 class Presenter(val activity: PresenterInterface) :
-        android.support.v7.widget.SearchView.OnQueryTextListener, View.OnFocusChangeListener,
-        Observer{
+        android.support.v7.widget.SearchView.OnQueryTextListener, View.OnFocusChangeListener, View.OnClickListener {
 
-    val dbMethodsAdapter = TaskDataInteractor.getDBMethodsAdapter()
+    val dbRepo = DBRepository.getDBRepository()
+    private lateinit var dialog: android.support.v7.app.AlertDialog
+    private lateinit var builder : android.support.v7.app.AlertDialog.Builder/*AlertDialog.Builder*/
+    var adapter: ItemsAdapterInterface? = null
     lateinit var photoFile : File
 
-    override fun update(notifObject : Any?) {
-        if(notifObject is Int) toastToActivity(notifObject)
+    override fun onClick(v: View) {
+        when (v.id) {
+            R.id.add_task_text -> {
+                activity.createTaskActivity(TEXT_RESULT, TextTaskActivity::class.java)
+            }
+            R.id.add_task_photo -> {
+                dialog = builder.show()
+                val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+                val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+                activity.setColorButtons(positiveButton, negativeButton)
+            }
+            R.id.add_task_list -> {
+                activity.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
+            }
+        }
     }
 
     fun toastToActivity(toShow : Int) {
         activity.showToast(toShow);
     }
 
-
+    fun initPhotoDialog(context: Context) {
+        builder = AlertDialog.Builder(context)
+        builder.setTitle("Добавление фото")
+                .setMessage("Выберите источник")
+                .setPositiveButton("Сделать новое") { dialog, id ->
+                    photoClicked()
+                }
+                .setNegativeButton("Взять из галереи") { dialog, id ->
+                    val photoPickerIntent = Intent(Intent.ACTION_PICK)
+                    photoPickerIntent.type = "image/*"
+                    activity.createTaskActivity(photoPickerIntent, CAMERA_RESULT)
+                }
+        dialog = builder.create()
+    }
 
     override fun onFocusChange(v: View?, hasFocus: Boolean) {
-        dbMethodsAdapter.retrieve()
+        //dbRepo.retrieve()
+        adapter!!.setData(dbRepo.getAllTasks())
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
         if (query != null) {
-            dbMethodsAdapter.search(query)
+            adapter!!.setData(dbRepo.search(query))
             return true
         } else {
-            dbMethodsAdapter.retrieve()
+            adapter!!.setData(dbRepo.getAllTasks())
+            //dbRepo.retrieve()
             return true
         }
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
-        dbMethodsAdapter.searchDynamic(newText)
+        adapter!!.setData(dbRepo.searchDynamic(newText))
         return true
     }
 
@@ -65,11 +98,12 @@ class Presenter(val activity: PresenterInterface) :
                     val text = result.data.getStringExtra(TEXT)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        dbMethodsAdapter.edit(get_id, name, ItemsAdapter.TYPE_ITEM_TEXT,
-                                text)
+                        adapter!!.setData(dbRepo.update(get_id, name, TaskListItem.TYPE_ITEM_TEXT,
+                                text))
                     } else {
-                        dbMethodsAdapter.save(name, ItemsAdapter.TYPE_ITEM_TEXT, text)
+                        adapter!!.setData(dbRepo.add(name, TaskListItem.TYPE_ITEM_TEXT, text))
                     }
+                    //adapter!!.retrieveAdapter()
                     //initRecyclerView()
                 }
             } else {
@@ -77,39 +111,16 @@ class Presenter(val activity: PresenterInterface) :
             }
             CAMERA_RESULT -> {
                 //TODO: сохранение через внешнее хранилище
-                /*try {
-                    val thumbnail = result.data!!.extras!!.get("data") as Bitmap
-                    val imageString = bitmapToBase64(thumbnail)
-                    activity.taskDataInteractor!!.save("1", ItemsAdapter.TYPE_ITEM_IMAGE,
-                            imageString)
-                    //initRecyclerView()
-                } catch (ex: NullPointerException) {
-                    toastToActivity(R.string.photo_chanceled)
-                }*/
-
-                /*val file = File(Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_PICTURES), "pic.jpg")
-                if (!file.mkdirs()) {
-                    toastToActivity(R.string.no_external)
-                }*/
                 try {
                     //TODO получать файлик
-                    /*val uri = result.data!!.extras!!.get(MediaStore.EXTRA_OUTPUT) as Uri
-                    val file : File = File(uri.path)*/
-                    //val file = File(Environment.getExternalStorageDirectory().path, "pic.jpg")
-                    /*val uri = Uri.fromFile(file)
-                    val bitmap = MediaStore.Images.Media.getBitmap(app.context.contentResolver, uri)
-                    */
-                    dbMethodsAdapter.save("", TaskListItem.TYPE_ITEM_IMAGE,
-                            photoFile.canonicalPath)
+                    adapter!!.setData(dbRepo.add("", TaskListItem.TYPE_ITEM_IMAGE,
+                            photoFile.canonicalPath))
 
                 }
                 catch (ex : Exception){
                     toastToActivity(R.string.no_external)
                 }
-                /*val file = result.data!!.extras!!.get("data") as File
-                taskDataInteractor.save("", TaskListItem.TYPE_ITEM_IMAGE, file.canonicalPath)
-*/            }
+            }
 
             GALLERY_RESULT -> {
                 //TODO: сохранение через внешнее хранилище
@@ -139,9 +150,10 @@ class Presenter(val activity: PresenterInterface) :
                     val text = result.data.getStringExtra(LIST)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        dbMethodsAdapter.edit(get_id, "", ItemsAdapter.TYPE_ITEM_LIST, text)
+                        adapter!!.setData(dbRepo.update(get_id, "",
+                                TaskListItem.TYPE_ITEM_LIST, text))
                     } else {
-                        dbMethodsAdapter.save("", ItemsAdapter.TYPE_ITEM_LIST, text)
+                        adapter!!.setData(dbRepo.add("", TaskListItem.TYPE_ITEM_LIST, text))
                     }
 
                 }
@@ -157,12 +169,18 @@ class Presenter(val activity: PresenterInterface) :
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
         photoFile = PhotoInteractor.createFilePath()
-        /*= File(Environment.getExternalStorageDirectory(), "pic.jpg")*/
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile))
 
         activity.startPhotoActivity(cameraIntent)
     }
 
+    fun attachAdapter(itemsAdapter: ItemsAdapterInterface) {
+        adapter = itemsAdapter
+    }
+
+    fun adapterStartFill() {
+        adapter!!.setData(dbRepo.getAllTasks())
+    }
 
     companion object {
 

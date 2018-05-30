@@ -48,14 +48,14 @@
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
                 android:hint="text"
-                android:onClick="OnClick"/>-->
+                android:onClick="onClick"/>-->
 
                 <!--<TextView
                 android:id="@+id/new_cb"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:onClick="OnClick"
+                android:onClick="onClick"
                 android:text="@string/new_cb"
                 android:textSize="20sp"
 

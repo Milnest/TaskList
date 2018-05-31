@@ -22,8 +22,8 @@ import java.util.*
  * Created by t-yar on 17.04.2018.
  */
 
-class ItemsAdapter :
-        RecyclerView.Adapter<RecyclerView.ViewHolder>(), ItemsAdapterInterface {
+class ItemsAdapter(private val iClickListener: IClickListener) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
     private val dataRep : DBRepository
@@ -69,12 +69,9 @@ class ItemsAdapter :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         // Получаем тип айтема в данной позиции для заполнения его данными
-        tempViewHolderPosition = holder.adapterPosition
-        mViewHolderList.add(tempViewHolderPosition, holder)
+        mViewHolderList.add(holder.adapterPosition, holder)
         val taskListItem = mItems!![position]
         val type = taskListItem.type
-        holder.itemView.setOnLongClickListener(RecyclerHolderPresenter(tempViewHolderPosition, type))
-        holder.itemView.setOnClickListener(RecyclerHolderPresenter(tempViewHolderPosition, type))
         //Снимаем выделение
         if (taskListItem.isSelected)
             holder.itemView.setBackgroundResource(R.color.black)
@@ -82,7 +79,6 @@ class ItemsAdapter :
             holder.itemView.setBackgroundResource(R.color.colorAccent)
         when (type) {
             TaskListItem.TYPE_ITEM_TEXT -> {
-                //Выполняется приведение типа для вызова отличных методов
                 val textTaskListItem = taskListItem as TextTaskListItem
                 val textItemHolder = holder as TextItemHolder
                 textItemHolder.mName.text = textTaskListItem.name
@@ -97,7 +93,7 @@ class ItemsAdapter :
             TaskListItem.TYPE_ITEM_LIST -> {
                 val listOfCbTaskListItem = taskListItem as ListOfCheckboxesTaskListItem
                 val cbListItemHolder = holder as CheckboxListItemHolder
-                val layout = cbListItemHolder.itemView.findViewById<View>(R.id.layout_to_add) as LinearLayout
+                val layout = cbListItemHolder.cbListLayout/*cbListItemHolder.itemView.findViewById<View>(R.id.layout_to_add) as LinearLayout*/
                 //Очистить view holder.
                 layout.removeAllViews()
                 //Заполнить ViewHolder новыми элементами.
@@ -131,58 +127,42 @@ class ItemsAdapter :
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (mItems != null) {
-            val taskListItem = mItems!![position]
-            //if (taskListItem != null) {
-                return taskListItem.type
-            //}
-        }
-        return 0
+        return mItems!!.get(position).type
     }
 
 
-    class TextItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    open inner class TaskItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+        init {
+            itemView.setOnClickListener { iClickListener.onItemClick(layoutPosition) }
+            itemView.setOnLongClickListener { iClickListener.onItemLongClick(layoutPosition) }
+        }
+    }
+
+    inner class TextItemHolder(itemView: View) : TaskItemHolder(itemView) {
         //Текстовые поля
-        internal var mName: TextView
-        internal var mText: TextView
-
-        init {
-            //Текстовые поля
-            mName = itemView.findViewById(R.id.name)
-            mText = itemView.findViewById(R.id.text)
-        }
+        internal var mName: TextView = itemView.findViewById(R.id.name)
+        internal var mText: TextView = itemView.findViewById(R.id.text)
     }
 
-    class ImgItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ImgItemHolder(itemView: View) : TaskItemHolder(itemView) {
         //Поля картиники
-        internal var mImgName: TextView
-        internal var mImage: ImageView
-
-        init {
-            //Поля картинки
-            mImgName = itemView.findViewById(R.id.imgName)
-            mImage = itemView.findViewById(R.id.img)
-        }
+        internal var mImgName: TextView = itemView.findViewById(R.id.imgName)
+        internal var mImage: ImageView = itemView.findViewById(R.id.img)
     }
 
-    inner class CheckboxListItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        //Поля картиники
-        internal var cbListLayout: LinearLayout
-
-        init {
-            cbListLayout = itemView.findViewById<View>(R.id.layout_to_add) as LinearLayout
-        }
+    inner class CheckboxListItemHolder(itemView: View) : TaskItemHolder(itemView) {
+        //Лайаут списка чекбоксов для заполнения
+        internal var cbListLayout: LinearLayout = itemView.findViewById<View>(R.id.layout_to_add)
+                as LinearLayout
     }
 
-    override fun addSelection(position: Int) {
-        tempViewHolderPosition = position
-        val viewHolder = mViewHolderList.get(tempViewHolderPosition);
+    fun addSelection(position: Int) {
+        val viewHolder = mViewHolderList.get(position);
         viewHolder.itemView.setBackgroundResource(R.color.black)
-        //tempViewHolderPosition = viewHolder.adapterPosition
-        mItems!![tempViewHolderPosition].isSelected = true
+        mItems!![position].isSelected = true
     }
-    
-    override fun removeSelection() {
+
+    fun removeSelection() {
         for (item in mItems!!) {
             item.isSelected = false
         }
@@ -191,16 +171,18 @@ class ItemsAdapter :
         }
     }
 
-    override fun setData(data : List<TaskListItem>){
+    fun setData(data : List<TaskListItem>){
         mItems = data
         notifyDataSetChanged()
     }
 
-    override fun retrieveAdapter(){
-        notifyDataSetChanged()
+
+    override fun getItemId(position: Int): Long {
+        return mItems!!.get(position).id.toLong()
     }
 
-    companion object {
-        var tempViewHolderPosition: Int = 0
+    interface IClickListener {
+        fun onItemClick(position: Int)
+        fun onItemLongClick(position: Int) : Boolean
     }
 }

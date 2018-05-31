@@ -21,7 +21,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 "'task_table', name, type, content)");*/
 
         /*db.execSQL("CREATE VIRTUAL TABLE fts_task_table USING fts4 (_id, name, type, content)")*/
-        db.execSQL("CREATE UNIQUE INDEX ix_name_content" +
+        db.execSQL("CREATE INDEX ix_name_content" +
                 " ON task_table(name, content);")
 
         db.execSQL("INSERT INTO " + TABLE + " (" + COLUMN_ID + ", " + COLUMN_NAME
@@ -36,15 +36,13 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
     companion object {
-        private val DATABASE_NAME = "task_data.db" // название бд
-        private val SCHEMA = 1 // версия базы данных
-        internal val TABLE = "task_table" // название таблицы в бд
-        // названия столбцов
+        private val DATABASE_NAME = "task_data.db"
+        private val SCHEMA = 1
+        internal val TABLE = "task_table"
         val COLUMN_ID = "_id"
         val COLUMN_NAME = "name"
         val COLUMN_TYPE = "type"
         val COLUMN_CONTENT = "content"
         val TYPE_ITEM_TEXT = 0
-        val TYPE_ITEM_IMAGE = 1
     }
 }

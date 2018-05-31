@@ -1,11 +1,11 @@
-package com.milnest.tasklist.presentation.main
+package com.milnest.tasklist.presentation.mainScreen
 
 import android.content.Intent
 import android.widget.Button
 import com.milnest.tasklist.entities.ResultOfActivity
 
 interface PresenterInterface{
-    fun showToast(toShow : Int)
+    fun showNotif(toShow : Int)
     fun getResult() : ResultOfActivity?
     fun startPhotoActivity(cameraIntent: Intent)
     fun createTaskActivity(createTaskIntent : Intent, taskType : Int)

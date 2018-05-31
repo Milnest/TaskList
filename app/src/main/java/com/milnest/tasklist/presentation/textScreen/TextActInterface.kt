@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.text
+package com.milnest.tasklist.presentation.textScreen
 
 import android.content.Intent
 import com.milnest.tasklist.entities.TextActData

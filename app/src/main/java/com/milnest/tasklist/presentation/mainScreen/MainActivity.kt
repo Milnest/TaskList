@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.main
+package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.SearchManager
 import android.content.Context
@@ -15,7 +15,8 @@ import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.presentation.element.ActModeInterface
 import com.milnest.tasklist.presentation.element.ItemsAdapter
-import com.milnest.tasklist.presentation.element.RecyclerHolderPresenter
+import com.milnest.tasklist.presentation.element.RecyclerListPresenter
+
 
 class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private lateinit var recyclerView: RecyclerView
@@ -29,8 +30,8 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private lateinit var addTaskText : View
     private lateinit var addTaskList : View
     private lateinit var addTaskImg : View
-    //override var taskDataInteractor : TaskDataInteractor? = null
     private val mainPresenter = Presenter(this)
+    private val listPresenter = RecyclerListPresenter()
     //Для результата в презентер
     private var resAct: ResultOfActivity? = null
 
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
                 recyclerView.layoutManager = mLinearLayoutManager
                 item.setIcon(R.drawable.ic_tasks_column_split)
             }
-        }/*case R.id.action_search:*/
+        }
         return true
     }
 
@@ -67,9 +68,9 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     /**Инициализирует Recycler */
     private fun initRecyclerView() {
         recyclerView = findViewById<View>(R.id.recycler_view) as RecyclerView
-        adapter = ItemsAdapter()
+        adapter = ItemsAdapter(listPresenter)
         recyclerView.adapter = adapter
-        RecyclerHolderPresenter.attachAdapter(adapter)
+        RecyclerListPresenter.attachAdapter(adapter)
         mainPresenter.attachAdapter(adapter)
         mainPresenter.adapterStartFill()
     }
@@ -78,9 +79,9 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private fun setInitialData() {
         mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(mToolbar)
-        RecyclerHolderPresenter.attachView(this)
+        RecyclerListPresenter.attachView(this)
         initRecyclerView()
-        mActionModeCallback = RecyclerHolderPresenter
+        mActionModeCallback = listPresenter
         recyclerView.layoutManager = mLinearLayoutManager
         initPresenter()
     }
@@ -100,9 +101,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         searchView!!.setOnQueryTextFocusChangeListener(mainPresenter)
     }
 
-    /**Отображает диалог выбора места получения изображеемя
-     */
-
     override fun startPhotoActivity(cameraIntent: Intent) {
         startActivityForResult(cameraIntent, CAMERA_RESULT)
     }
@@ -120,14 +118,12 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         return resAct
     }
 
-    override fun showToast(toShow: Int) {
+    override fun showNotif(toShow: Int) {
         Toast.makeText(this, getString(toShow), Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
         super.onResume()
-        //taskDataInteractor!!.retrieve()
-        //TODO : retrieve
         mainPresenter.adapterStartFill()
     }
 
@@ -147,14 +143,13 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int,
                                    task: Array<String>) {
         val intentChange = Intent(this, activityClass)
-        //intentChange.putExtra("data", taskDataInteractor!!.getById(itemId))
         intentChange.putExtra("data", task)
         intentChange.putExtra("id", itemId)
         startActivityForResult(intentChange, actResType)
     }
 
     override fun createTaskActivity(createTaskIntent: Intent, taskType: Int) {
-        startActivityForResult(createTaskIntent, GALLERY_RESULT)
+        startActivityForResult(createTaskIntent, taskType)
     }
 
     override fun createTaskActivity(taskType: Int, taskClass: Class<*>) {
@@ -168,8 +163,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     }
 
     companion object {
-
-        //var mTaskListItems: MutableList<TaskListItem> = ArrayList()
         val NAME = "NAME"
         val TEXT = "TEXT"
         val ID = "ID"

@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.list
+package com.milnest.tasklist.presentation.listScreen
 
 import android.content.Intent
 import android.view.View
@@ -9,7 +9,7 @@ import com.milnest.tasklist.entities.CheckboxTaskListItem
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.other.utils.JsonAdapter
-import com.milnest.tasklist.presentation.main.MainActivity
+import com.milnest.tasklist.presentation.mainScreen.MainActivity
 import java.util.ArrayList
 
 class ListActivityPresenter : View.OnClickListener {

@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.list
+package com.milnest.tasklist.presentation.listScreen
 
 import android.content.Intent
 import android.util.Pair
@@ -12,7 +12,7 @@ interface ListActInterface {
     fun getStartText() : Intent?
 
     fun fillStart(cbList: ListOfCheckboxesTaskListItem)
-    /*fun showToast(toShow : Int)*/
+    /*fun showNotif(toShow : Int)*/
     fun firstFill()
     fun recieveList(data: Intent)
     fun newCb()

@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.list
+package com.milnest.tasklist.presentation.listScreen
 
 import android.app.Activity
 import android.content.Intent

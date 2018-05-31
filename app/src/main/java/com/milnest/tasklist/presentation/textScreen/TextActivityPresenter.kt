@@ -1,12 +1,11 @@
-package com.milnest.tasklist.presentation.text
+package com.milnest.tasklist.presentation.textScreen
 
 import android.content.Intent
 import android.os.AsyncTask
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.interactor.YandexTranslate
-import com.milnest.tasklist.presentation.main.MainActivity
-import com.milnest.tasklist.presentation.text.TextActInterface
+import com.milnest.tasklist.presentation.mainScreen.MainActivity
 import java.io.IOException
 
 class TextActivityPresenter {

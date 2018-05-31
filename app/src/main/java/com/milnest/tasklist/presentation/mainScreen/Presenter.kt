@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.main
+package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.Activity
 import android.content.Context
@@ -12,40 +12,41 @@ import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.other.utils.PhotoInteractor
-import com.milnest.tasklist.presentation.element.ItemsAdapterInterface
-import com.milnest.tasklist.presentation.list.ListTaskActivity
-import com.milnest.tasklist.presentation.text.TextTaskActivity
+import com.milnest.tasklist.presentation.element.ItemsAdapter
+import com.milnest.tasklist.presentation.listScreen.ListTaskActivity
+import com.milnest.tasklist.presentation.textScreen.TextTaskActivity
 import com.milnest.tasklist.repository.DBRepository
 import java.io.File
 
-class Presenter(val activity: PresenterInterface) :
-        android.support.v7.widget.SearchView.OnQueryTextListener, View.OnFocusChangeListener, View.OnClickListener {
+class Presenter(val view: PresenterInterface) :
+        android.support.v7.widget.SearchView.OnQueryTextListener,
+        View.OnFocusChangeListener, View.OnClickListener {
 
     val dbRepo = DBRepository.getDBRepository()
     private lateinit var dialog: android.support.v7.app.AlertDialog
     private lateinit var builder : android.support.v7.app.AlertDialog.Builder/*AlertDialog.Builder*/
-    var adapter: ItemsAdapterInterface? = null
+    var adapter: ItemsAdapter? = null
     lateinit var photoFile : File
 
     override fun onClick(v: View) {
         when (v.id) {
             R.id.add_task_text -> {
-                activity.createTaskActivity(TEXT_RESULT, TextTaskActivity::class.java)
+                view.createTaskActivity(TEXT_RESULT, TextTaskActivity::class.java)
             }
             R.id.add_task_photo -> {
                 dialog = builder.show()
                 val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
                 val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-                activity.setColorButtons(positiveButton, negativeButton)
+                view.setColorButtons(positiveButton, negativeButton)
             }
             R.id.add_task_list -> {
-                activity.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
+                view.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
             }
         }
     }
 
-    fun toastToActivity(toShow : Int) {
-        activity.showToast(toShow);
+    fun notifToActivity(toShow : Int) {
+        view.showNotif(toShow);
     }
 
     fun initPhotoDialog(context: Context) {
@@ -58,7 +59,7 @@ class Presenter(val activity: PresenterInterface) :
                 .setNegativeButton("Взять из галереи") { dialog, id ->
                     val photoPickerIntent = Intent(Intent.ACTION_PICK)
                     photoPickerIntent.type = "image/*"
-                    activity.createTaskActivity(photoPickerIntent, CAMERA_RESULT)
+                    view.createTaskActivity(photoPickerIntent, CAMERA_RESULT)
                 }
         dialog = builder.create()
     }
@@ -69,24 +70,18 @@ class Presenter(val activity: PresenterInterface) :
     }
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        if (query != null) {
-            adapter!!.setData(dbRepo.search(query))
-            return true
-        } else {
-            adapter!!.setData(dbRepo.getAllTasks())
-            //dbRepo.retrieve()
-            return true
-        }
+        if (query == null) adapter!!.setData(dbRepo.getAllTasks())
+        return true
     }
 
     override fun onQueryTextChange(newText: String): Boolean {
-        adapter!!.setData(dbRepo.searchDynamic(newText))
+        adapter!!.setData(dbRepo.searchDynamicTask(newText))
         return true
     }
 
     //Срабатывает, когда активити получает результат
     fun resultActivityRecieved(){
-        processRes(activity.getResult())
+        processRes(view.getResult())
     }
 
     private fun processRes(result: ResultOfActivity?) {
@@ -98,27 +93,26 @@ class Presenter(val activity: PresenterInterface) :
                     val text = result.data.getStringExtra(TEXT)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        adapter!!.setData(dbRepo.update(get_id, name, TaskListItem.TYPE_ITEM_TEXT,
-                                text))
+                        dbRepo.updateTask(get_id, name, TaskListItem.TYPE_ITEM_TEXT, text)
+                        adapter!!.setData(dbRepo.getAllTasks())
                     } else {
-                        adapter!!.setData(dbRepo.add(name, TaskListItem.TYPE_ITEM_TEXT, text))
+                        dbRepo.addTask(name, TaskListItem.TYPE_ITEM_TEXT, text)
+                        adapter!!.setData(dbRepo.getAllTasks())
                     }
                     //adapter!!.retrieveAdapter()
                     //initRecyclerView()
                 }
             } else {
-                toastToActivity(R.string.save_canceled)
+                notifToActivity(R.string.save_canceled)
             }
             CAMERA_RESULT -> {
-                //TODO: сохранение через внешнее хранилище
                 try {
-                    //TODO получать файлик
-                    adapter!!.setData(dbRepo.add("", TaskListItem.TYPE_ITEM_IMAGE,
-                            photoFile.canonicalPath))
+                    dbRepo.addTask("", TaskListItem.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
+                    adapter!!.setData(dbRepo.getAllTasks())
 
                 }
                 catch (ex : Exception){
-                    toastToActivity(R.string.no_external)
+                    notifToActivity(R.string.no_external)
                 }
             }
 
@@ -150,10 +144,12 @@ class Presenter(val activity: PresenterInterface) :
                     val text = result.data.getStringExtra(LIST)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        adapter!!.setData(dbRepo.update(get_id, "",
-                                TaskListItem.TYPE_ITEM_LIST, text))
+                        dbRepo.updateTask(get_id, "",
+                                TaskListItem.TYPE_ITEM_LIST, text)
+                        adapter!!.setData(dbRepo.getAllTasks())
                     } else {
-                        adapter!!.setData(dbRepo.add("", TaskListItem.TYPE_ITEM_LIST, text))
+                        dbRepo.addTask("", TaskListItem.TYPE_ITEM_LIST, text)
+                        adapter!!.setData(dbRepo.getAllTasks())
                     }
 
                 }
@@ -171,10 +167,10 @@ class Presenter(val activity: PresenterInterface) :
         photoFile = PhotoInteractor.createFilePath()
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile))
 
-        activity.startPhotoActivity(cameraIntent)
+        view.startPhotoActivity(cameraIntent)
     }
 
-    fun attachAdapter(itemsAdapter: ItemsAdapterInterface) {
+    fun attachAdapter(itemsAdapter: ItemsAdapter) {
         adapter = itemsAdapter
     }
 

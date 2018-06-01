@@ -6,10 +6,7 @@ package com.milnest.tasklist.entities
 
 /**Общий класс задач для списка
  */
-open class TaskListItem/*public TaskListItem(String name, int type) {
-        mName = name;
-        mType = type;
-    }*/
+open class TaskListItem
 (var id: Int, var name: String?, var type: Int) {
     var isSelected: Boolean = false
 

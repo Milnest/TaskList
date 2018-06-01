@@ -36,13 +36,6 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
 
     override fun onResume() {
         super.onResume()
-        /*val extras = intent.extras
-        if (extras != null) {
-            val data = extras.getStringArray("data")
-            taskTitle.setText(data!![0])
-            taskText.setText(data[1])
-            mId = extras.getInt("id")
-        }*/
         presenter.startFillUsed()
     }
 
@@ -94,19 +87,6 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         AsyncRequest().execute()
     }
 
-    /**Сохраняет данные в Intent
-     */
-    /*private fun saveText() {
-        val data = Intent()
-        getText()
-        data.putExtra(MainActivity.NAME, title)
-        data.putExtra(MainActivity.TEXT, text)
-        if (mId != null) {
-            data.putExtra(MainActivity.ID, mId!!)
-        }
-        setResult(Activity.RESULT_OK, data)
-    }*/
-
     override fun saveText(data : Intent) {
         setResult(Activity.RESULT_OK, data)
     }
@@ -114,16 +94,13 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
     override fun getText(): TextActData {
         title = taskTitle.text.toString()
         text = taskText.text.toString()
-        return TextActData(title.toString(), text.toString()/*, mId*/)/*arrayOf(title, text, mId)*/
+        return TextActData(title.toString(), text.toString())
     }
 
-    override fun setText(strings: Array<String>/*, id : Int?*/){
+    override fun setText(strings: Array<String?>/*, id : Int?*/){
         //TODO: Вынести Id В презентер
         taskTitle.setText(strings[0])
         taskText.setText(strings[1])
-        /*if(id!=null){
-            mId = id
-        }*/
     }
 
     override fun showToast(toShow: Int) {

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.*
+import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,14 +20,12 @@ import com.milnest.tasklist.presentation.element.RecyclerListPresenter
 
 
 class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
+    override var mActionMode: android.support.v7.view.ActionMode? = null
     private lateinit var recyclerView: RecyclerView
-    private var mToolbar: Toolbar? = null
     private val mGridManager = GridLayoutManager(this, 2)
     private val mLinearLayoutManager = LinearLayoutManager(this)
-    override var mActionMode: android.support.v7.view.ActionMode? = null
-    var mActionModeCallback: android.support.v7.view.ActionMode.Callback? = null
-    lateinit var adapter: ItemsAdapter
-    private var searchView: SearchView? = null
+    private lateinit var adapter: ItemsAdapter
+    private lateinit var searchView: SearchView
     private lateinit var addTaskText : View
     private lateinit var addTaskList : View
     private lateinit var addTaskImg : View
@@ -46,7 +45,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         menuInflater.inflate(R.menu.menu_main, menu)
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         searchView = menu.findItem(R.id.action_search).actionView as SearchView
-        searchView!!.setSearchableInfo(searchManager.getSearchableInfo(componentName))
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
         initSearch()
         return true
     }
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     /**Инициализирует Recycler */
     private fun initRecyclerView() {
         recyclerView = findViewById<View>(R.id.recycler_view) as RecyclerView
-        adapter = ItemsAdapter(listPresenter)
+        adapter = ItemsAdapter(listPresenter.onItemClickListener)
         recyclerView.adapter = adapter
         RecyclerListPresenter.attachAdapter(adapter)
         mainPresenter.attachAdapter(adapter)
@@ -77,11 +76,11 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
 
     /**Заполняет Recycler тестовыми данными и инициализирует View */
     private fun setInitialData() {
-        mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
+        val mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(mToolbar)
         RecyclerListPresenter.attachView(this)
         initRecyclerView()
-        mActionModeCallback = listPresenter
+        //mActionModeCallback = listPresenter
         recyclerView.layoutManager = mLinearLayoutManager
         initPresenter()
     }
@@ -89,16 +88,16 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     private fun initPresenter() {
         mainPresenter.initPhotoDialog(this)
         addTaskText = findViewById(R.id.add_task_text)
-        addTaskText.setOnClickListener(mainPresenter)
+        addTaskText.setOnClickListener(mainPresenter.addTextTask())
         addTaskList = findViewById(R.id.add_task_list)
-        addTaskList.setOnClickListener(mainPresenter)
+        addTaskList.setOnClickListener(mainPresenter.addListTask())
         addTaskImg = findViewById(R.id.add_task_photo)
-        addTaskImg.setOnClickListener(mainPresenter)
+        addTaskImg.setOnClickListener(mainPresenter.addImgTask())
     }
 
     private fun initSearch() {
-        searchView!!.setOnQueryTextListener(mainPresenter)
-        searchView!!.setOnQueryTextFocusChangeListener(mainPresenter)
+        searchView.setOnQueryTextListener(mainPresenter.searchListener)
+        searchView.setOnQueryTextFocusChangeListener(mainPresenter.searchChangeFocus())
     }
 
     override fun startPhotoActivity(cameraIntent: Intent) {
@@ -132,7 +131,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     }
 
     override fun showActionBar(title: Int) {
-        mActionMode = startSupportActionMode(mActionModeCallback!!)
+        mActionMode = startSupportActionMode(listPresenter.onActionModeListener)
         mActionMode!!.title = getString(title)
     }
 
@@ -140,10 +139,10 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         mActionMode!!.finish()
     }
 
-    override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int,
-                                   task: Array<String>) {
+    override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int
+                                   /*, task: Array<String?>*/) {
         val intentChange = Intent(this, activityClass)
-        intentChange.putExtra("data", task)
+        /*intentChange.putExtra("data", task)*/
         intentChange.putExtra("id", itemId)
         startActivityForResult(intentChange, actResType)
     }

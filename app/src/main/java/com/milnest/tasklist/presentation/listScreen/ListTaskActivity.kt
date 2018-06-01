@@ -48,7 +48,7 @@ class ListTaskActivity : AppCompatActivity(), ListActInterface {
         mCheckBoxList = ArrayList()
         extras = intent.extras
         initPresenter()
-        newCheckbox!!.setOnClickListener(presenter)
+        newCheckbox!!.setOnClickListener(presenter.addNewCheckBox())
     }
 
     private fun initPresenter() {

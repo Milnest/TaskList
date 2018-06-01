@@ -10,9 +10,10 @@ import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.other.utils.JsonAdapter
 import com.milnest.tasklist.presentation.mainScreen.MainActivity
+import com.milnest.tasklist.repository.DBRepository
 import java.util.ArrayList
 
-class ListActivityPresenter : View.OnClickListener {
+class ListActivityPresenter {
 
     var listId : Int? = null
     var view: ListActInterface? = null
@@ -65,22 +66,16 @@ class ListActivityPresenter : View.OnClickListener {
     private fun setStartList(){
         val extras = view!!.getStartText()!!.extras
         if (extras != null) {
-            val data = extras.getStringArray("data")
-            val listData = data!![1]
-            val cbList = JsonAdapter.fromJson(listData.toString()) //toString
             listId = extras.getInt("id")
+            val cbList = DBRepository.getTaskById(listId!!)
 
-            view!!.fillStart(cbList)
+            view!!.fillStart(cbList as ListOfCheckboxesTaskListItem)
         } else {
             view!!.firstFill()
         }
     }
 
-    override fun onClick(v: View?) {
-        when (v!!.id) {
-            R.id.new_cb -> {
-                view!!.newCb()
-            }
-        }
+    fun addNewCheckBox() = View.OnClickListener {
+        view!!.newCb()
     }
 }

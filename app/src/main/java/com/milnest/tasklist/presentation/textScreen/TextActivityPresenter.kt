@@ -4,8 +4,10 @@ import android.content.Intent
 import android.os.AsyncTask
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.TextActData
+import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.interactor.YandexTranslate
 import com.milnest.tasklist.presentation.mainScreen.MainActivity
+import com.milnest.tasklist.repository.DBRepository
 import java.io.IOException
 
 class TextActivityPresenter {
@@ -19,9 +21,12 @@ class TextActivityPresenter {
     private fun setStartText(){
         val extras = view!!.getStartText()!!.extras
         if (extras != null) {
-            val data = extras.getStringArray("data")
             val id = extras.getInt("id")
             textId = id
+            val textTask = DBRepository.getTaskById(textId!!) as TextTaskListItem?
+            val name = textTask!!.name
+            val text = textTask.text
+            val data = arrayOf(name, text)
             view!!.setText(data/*, id*/)
         }
     }
@@ -77,9 +82,9 @@ class TextActivityPresenter {
         view = null
     }
 
-    internal inner class AsyncRequest : AsyncTask<TextActData, Void, Array<String>>() {
+    internal inner class AsyncRequest : AsyncTask<TextActData, Void, Array<String?>>() {
 
-        override fun doInBackground(vararg params: TextActData): Array<String>? {
+        override fun doInBackground(vararg params: TextActData): Array<String?>? {
             try {
                 val translatedTitle = YandexTranslate.translate("ru-en",
                         params[0].taskTitle)
@@ -93,7 +98,7 @@ class TextActivityPresenter {
 
         }
 
-        override fun onPostExecute(strings: Array<String>?) {
+        override fun onPostExecute(strings: Array<String?>) {
             super.onPostExecute(strings)
             if (strings != null) {
                 view!!.setText(strings/*, null*/)

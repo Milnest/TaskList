@@ -15,7 +15,6 @@ import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.other.utils.ChangeCbColor
-import com.milnest.tasklist.repository.DBRepository
 import java.util.*
 
 /**
@@ -26,12 +25,10 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
-    private val dataRep : DBRepository
     private var mItems: List<TaskListItem>? = null
 
     init {
         mViewHolderList = ArrayList()
-        dataRep = DBRepository.getDBRepository()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {

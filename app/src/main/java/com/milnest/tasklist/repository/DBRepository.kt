@@ -1,6 +1,5 @@
 package com.milnest.tasklist.repository
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.SQLException
@@ -17,10 +16,10 @@ import com.milnest.tasklist.other.utils.PhotoInteractor
  * Created by t-yar on 21.04.2018.
  */
 
-class DBRepository private constructor() {
+object DBRepository {
     private var db: SQLiteDatabase = TaskDatabaseHelper(app.context).writableDatabase
 
-    fun getAllTasks() : MutableList<TaskListItem>{
+    fun getAllTasks(): MutableList<TaskListItem> {
         val cursor = db.query(TaskDatabaseHelper.TABLE, null,
                 null, null, null, null, null)
         val list = cursorToList(cursor)
@@ -34,10 +33,10 @@ class DBRepository private constructor() {
         val indexName = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_NAME)
         val indexContent = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_CONTENT)
         val indexType = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_TYPE)
-        var id : Int
-        var name : String
-        var type : Int
-        var content : String
+        var id: Int
+        var name: String
+        var type: Int
+        var content: String
 
         while (cursor.moveToNext()) {
             id = cursor.getInt(indexId)
@@ -60,70 +59,68 @@ class DBRepository private constructor() {
         return taskList
     }
 
-    fun addTask(name: String, type: Int, content: String){
+    fun addTask(name: String, type: Int, content: String) {
         try {
             val cv = ContentValues()
             cv.put(TaskDatabaseHelper.COLUMN_NAME, name)
             cv.put(TaskDatabaseHelper.COLUMN_TYPE, type)
             cv.put(TaskDatabaseHelper.COLUMN_CONTENT, content)
             db.insert(TaskDatabaseHelper.TABLE, TaskDatabaseHelper.COLUMN_ID, cv)
-        }
-        catch (e: SQLException) {
+        } catch (e: SQLException) {
         }
     }
 
-    fun getTaskById(id: Int): Array<String> {
+    fun getTaskById(id: Int): TaskListItem? {
         val cursor = db.query(TaskDatabaseHelper.TABLE, null,
                 TaskDatabaseHelper.COLUMN_ID + "=$id", null, null, null, null)
 
         val indexName = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_NAME)
+        val indexType = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_TYPE)
         val indexContent = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_CONTENT)
 
         var name = ""
         var content = ""
+        var type = -1
         if (cursor.moveToNext()) {
-                name = cursor.getString(indexName)
-                content = cursor.getString(indexContent)
+            name = cursor.getString(indexName)
+            content = cursor.getString(indexContent)
+            type = cursor.getInt(indexType)
         }
         cursor.close()
-        return arrayOf(name, content)
+
+        when (type) {
+            TaskListItem.TYPE_ITEM_TEXT -> return TextTaskListItem(id, name, content)
+            TaskListItem.TYPE_ITEM_IMAGE -> {
+                return ImgTaskListItem(id, name, PhotoInteractor.createImage(content))
+            }
+            TaskListItem.TYPE_ITEM_LIST -> {
+                return JsonAdapter.fromJson(content)
+            }
+        }
+        return null
+        //return arrayOf(name, content)
     }
 
-    fun updateTask(id: Int, name: String, type: Int, content: String){
-        try {
-            val cv = ContentValues()
-            cv.put(TaskDatabaseHelper.COLUMN_NAME, name)
-            cv.put(TaskDatabaseHelper.COLUMN_TYPE, type)
-            cv.put(TaskDatabaseHelper.COLUMN_CONTENT, content)
+    fun updateTask(id: Int, name: String, type: Int, content: String) {
+        val cv = ContentValues()
+        cv.put(TaskDatabaseHelper.COLUMN_NAME, name)
+        cv.put(TaskDatabaseHelper.COLUMN_TYPE, type)
+        cv.put(TaskDatabaseHelper.COLUMN_CONTENT, content)
 
-            db.update(TaskDatabaseHelper.TABLE, cv,
-                    TaskDatabaseHelper.COLUMN_ID + " =?",
-                    arrayOf(id.toString())).toLong()
-        }
-        catch (e: SQLException) {
-        }
+        db.update(TaskDatabaseHelper.TABLE, cv,
+                TaskDatabaseHelper.COLUMN_ID + " =?",
+                arrayOf(id.toString())).toLong()
     }
 
-    fun deleteTask(id: Int){
-        try {
-            db.delete(TaskDatabaseHelper.TABLE, TaskDatabaseHelper.COLUMN_ID +
-                    " =?", arrayOf(id.toString()))
-        } catch (e: SQLException) {
-            e.printStackTrace()
-        }
+    fun deleteTask(id: Int) {
+        db.delete(TaskDatabaseHelper.TABLE, TaskDatabaseHelper.COLUMN_ID +
+                " =?", arrayOf(id.toString()))
     }
 
-    fun searchDynamicTask(data: String) : MutableList<TaskListItem>{
+    fun searchDynamicTask(data: String): MutableList<TaskListItem> {
         val cursor = db.rawQuery("SELECT * FROM task_table " +
                 "WHERE name OR content LIKE '%$data%'", null)
         return cursorToList(cursor)
     }
-
-    companion object {
-        @SuppressLint("StaticFieldLeak")
-        private val dbRepository: DBRepository = DBRepository()
-        fun getDBRepository() = dbRepository
-    }
-
 }
 

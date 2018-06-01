@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.SearchView
 import android.view.View
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ResultOfActivity
@@ -18,34 +19,13 @@ import com.milnest.tasklist.presentation.textScreen.TextTaskActivity
 import com.milnest.tasklist.repository.DBRepository
 import java.io.File
 
-class Presenter(val view: PresenterInterface) :
-        android.support.v7.widget.SearchView.OnQueryTextListener,
-        View.OnFocusChangeListener, View.OnClickListener {
-
-    val dbRepo = DBRepository.getDBRepository()
+class Presenter(val view: PresenterInterface) {
     private lateinit var dialog: android.support.v7.app.AlertDialog
-    private lateinit var builder : android.support.v7.app.AlertDialog.Builder/*AlertDialog.Builder*/
+    private lateinit var builder: android.support.v7.app.AlertDialog.Builder/*AlertDialog.Builder*/
     var adapter: ItemsAdapter? = null
-    lateinit var photoFile : File
+    lateinit var photoFile: File
 
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.add_task_text -> {
-                view.createTaskActivity(TEXT_RESULT, TextTaskActivity::class.java)
-            }
-            R.id.add_task_photo -> {
-                dialog = builder.show()
-                val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-                view.setColorButtons(positiveButton, negativeButton)
-            }
-            R.id.add_task_list -> {
-                view.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
-            }
-        }
-    }
-
-    fun notifToActivity(toShow : Int) {
+    fun notifToActivity(toShow: Int) {
         view.showNotif(toShow);
     }
 
@@ -64,12 +44,12 @@ class Presenter(val view: PresenterInterface) :
         dialog = builder.create()
     }
 
-    override fun onFocusChange(v: View?, hasFocus: Boolean) {
+    /*override fun onFocusChange(v: View?, hasFocus: Boolean) {
         //dbRepo.retrieve()
         adapter!!.setData(dbRepo.getAllTasks())
-    }
+    }*/
 
-    override fun onQueryTextSubmit(query: String?): Boolean {
+    /*override fun onQueryTextSubmit(query: String?): Boolean {
         if (query == null) adapter!!.setData(dbRepo.getAllTasks())
         return true
     }
@@ -77,10 +57,10 @@ class Presenter(val view: PresenterInterface) :
     override fun onQueryTextChange(newText: String): Boolean {
         adapter!!.setData(dbRepo.searchDynamicTask(newText))
         return true
-    }
+    }*/
 
     //Срабатывает, когда активити получает результат
-    fun resultActivityRecieved(){
+    fun resultActivityRecieved() {
         processRes(view.getResult())
     }
 
@@ -93,25 +73,22 @@ class Presenter(val view: PresenterInterface) :
                     val text = result.data.getStringExtra(TEXT)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        dbRepo.updateTask(get_id, name, TaskListItem.TYPE_ITEM_TEXT, text)
-                        adapter!!.setData(dbRepo.getAllTasks())
+                        DBRepository.updateTask(get_id, name, TaskListItem.TYPE_ITEM_TEXT, text)
+                        adapter!!.setData(DBRepository.getAllTasks())
                     } else {
-                        dbRepo.addTask(name, TaskListItem.TYPE_ITEM_TEXT, text)
-                        adapter!!.setData(dbRepo.getAllTasks())
+                        DBRepository.addTask(name, TaskListItem.TYPE_ITEM_TEXT, text)
+                        adapter!!.setData(DBRepository.getAllTasks())
                     }
-                    //adapter!!.retrieveAdapter()
-                    //initRecyclerView()
                 }
             } else {
                 notifToActivity(R.string.save_canceled)
             }
             CAMERA_RESULT -> {
                 try {
-                    dbRepo.addTask("", TaskListItem.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
-                    adapter!!.setData(dbRepo.getAllTasks())
+                    DBRepository.addTask("", TaskListItem.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
+                    adapter!!.setData(DBRepository.getAllTasks())
 
-                }
-                catch (ex : Exception){
+                } catch (ex: Exception) {
                     notifToActivity(R.string.no_external)
                 }
             }
@@ -144,12 +121,12 @@ class Presenter(val view: PresenterInterface) :
                     val text = result.data.getStringExtra(LIST)
                     val get_id = result.data.getIntExtra(ID, -1)
                     if (get_id != -1) {
-                        dbRepo.updateTask(get_id, "",
+                        DBRepository.updateTask(get_id, "",
                                 TaskListItem.TYPE_ITEM_LIST, text)
-                        adapter!!.setData(dbRepo.getAllTasks())
+                        adapter!!.setData(DBRepository.getAllTasks())
                     } else {
-                        dbRepo.addTask("", TaskListItem.TYPE_ITEM_LIST, text)
-                        adapter!!.setData(dbRepo.getAllTasks())
+                        DBRepository.addTask("", TaskListItem.TYPE_ITEM_LIST, text)
+                        adapter!!.setData(DBRepository.getAllTasks())
                     }
 
                 }
@@ -175,11 +152,42 @@ class Presenter(val view: PresenterInterface) :
     }
 
     fun adapterStartFill() {
-        adapter!!.setData(dbRepo.getAllTasks())
+        adapter!!.setData(DBRepository.getAllTasks())
     }
 
-    companion object {
+    fun addTextTask() = View.OnClickListener {
+        view.createTaskActivity(TEXT_RESULT, TextTaskActivity::class.java)
+    }
 
+    fun addListTask() = View.OnClickListener {
+        view.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
+    }
+
+    fun addImgTask() = View.OnClickListener {
+        dialog = builder.show()
+        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        view.setColorButtons(positiveButton, negativeButton)
+    }
+
+    fun searchChangeFocus() = View.OnFocusChangeListener { view: View, b: Boolean ->
+        adapter!!.setData(DBRepository.getAllTasks())
+    }
+
+    val searchListener: SearchView.OnQueryTextListener
+        get() = object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (query == null) adapter!!.setData(DBRepository.getAllTasks())
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                adapter!!.setData(DBRepository.searchDynamicTask(newText))
+                return true
+            }
+        }
+
+    companion object {
         val NAME = "NAME"
         val TEXT = "TEXT"
         val ID = "ID"
@@ -188,7 +196,6 @@ class Presenter(val view: PresenterInterface) :
         private val CAMERA_RESULT = 2
         private val GALLERY_RESULT = 3
         private val LIST_RESULT = 4
-
     }
 
 }

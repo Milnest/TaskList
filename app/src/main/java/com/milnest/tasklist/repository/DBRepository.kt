@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import com.milnest.tasklist.application.app
 import com.milnest.tasklist.db.TaskDatabaseHelper
 import com.milnest.tasklist.entities.ImgTaskListItem
@@ -67,7 +68,9 @@ object DBRepository {
             cv.put(TaskDatabaseHelper.COLUMN_CONTENT, content)
             db.insert(TaskDatabaseHelper.TABLE, TaskDatabaseHelper.COLUMN_ID, cv)
         } catch (e: SQLException) {
+            Log.e("ERROR", e.toString())
         }
+
     }
 
     fun getTaskById(id: Int): TaskListItem? {

@@ -2,43 +2,75 @@ package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.SearchManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.*
-import android.view.ActionMode
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.SearchView
+import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.Toast
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ResultOfActivity
-import com.milnest.tasklist.presentation.element.ActModeInterface
-import com.milnest.tasklist.presentation.element.ItemsAdapter
-import com.milnest.tasklist.presentation.element.RecyclerListPresenter
+import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
+class MainActivity : AppCompatActivity(), PresenterInterface {
     override var mActionMode: android.support.v7.view.ActionMode? = null
-    private lateinit var recyclerView: RecyclerView
     private val mGridManager = GridLayoutManager(this, 2)
     private val mLinearLayoutManager = LinearLayoutManager(this)
-    private lateinit var adapter: ItemsAdapter
     private lateinit var searchView: SearchView
-    private lateinit var addTaskText : View
-    private lateinit var addTaskList : View
-    private lateinit var addTaskImg : View
-    private val mainPresenter = Presenter(this)
-    private val listPresenter = RecyclerListPresenter()
-    //Для результата в презентер
+    private val presenter = Presenter(this)
     private var resAct: ResultOfActivity? = null
+    private lateinit var dialogBuilder : AlertDialog.Builder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setInitialData()
-        lateinit var context: Context
+        bindViews()
+    }
+
+    private fun bindViews() {
+        val mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
+        setSupportActionBar(mToolbar)
+        presenter.setAdapter(recyclerView)
+        recyclerView.layoutManager = mLinearLayoutManager
+
+        dialogBuilder = AlertDialog.Builder(this)
+        dialogBuilder.setTitle("Добавление фото")
+                .setMessage("Выберите источник")
+                .setPositiveButton("Сделать новое") { _, _ ->
+                    presenter.photoClicked()
+                }
+                .setNegativeButton("Взять из галереи") { _, _ ->
+                    //presenter.takeFromGallery()
+                    //presenter.saveImageToFile()
+                    openGallery()
+                }
+        dialogBuilder.create()
+
+        add_task_text.setOnClickListener(presenter.addTextTask())
+        add_task_list.setOnClickListener(presenter.addListTask())
+        add_task_photo.setOnClickListener(presenter.addImgTask())
+    }
+
+    override fun showDialog() {
+        val dialog = dialogBuilder.show()
+        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        positiveButton.setTextColor(resources.getColor(R.color.lum_red))
+        negativeButton.setTextColor(resources.getColor(R.color.lum_red))
+    }
+
+    fun openGallery() {
+        val photoPickerIntent = Intent(Intent.ACTION_PICK)
+        photoPickerIntent.type = "image/*"
+        createTaskActivity(photoPickerIntent, GALLERY_RESULT)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -46,7 +78,8 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
         searchView = menu.findItem(R.id.action_search).actionView as SearchView
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        initSearch()
+        searchView.setOnQueryTextListener(presenter.searchListener)
+        searchView.setOnQueryTextFocusChangeListener(presenter.searchChangeFocus())
         return true
     }
 
@@ -63,54 +96,17 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         return true
     }
 
-
-    /**Инициализирует Recycler */
-    private fun initRecyclerView() {
-        recyclerView = findViewById<View>(R.id.recycler_view) as RecyclerView
-        adapter = ItemsAdapter(listPresenter.onItemClickListener)
-        recyclerView.adapter = adapter
-        RecyclerListPresenter.attachAdapter(adapter)
-        mainPresenter.attachAdapter(adapter)
-        mainPresenter.adapterStartFill()
-    }
-
-    /**Заполняет Recycler тестовыми данными и инициализирует View */
-    private fun setInitialData() {
-        val mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        setSupportActionBar(mToolbar)
-        RecyclerListPresenter.attachView(this)
-        initRecyclerView()
-        //mActionModeCallback = listPresenter
-        recyclerView.layoutManager = mLinearLayoutManager
-        initPresenter()
-    }
-
-    private fun initPresenter() {
-        mainPresenter.initPhotoDialog(this)
-        addTaskText = findViewById(R.id.add_task_text)
-        addTaskText.setOnClickListener(mainPresenter.addTextTask())
-        addTaskList = findViewById(R.id.add_task_list)
-        addTaskList.setOnClickListener(mainPresenter.addListTask())
-        addTaskImg = findViewById(R.id.add_task_photo)
-        addTaskImg.setOnClickListener(mainPresenter.addImgTask())
-    }
-
-    private fun initSearch() {
-        searchView.setOnQueryTextListener(mainPresenter.searchListener)
-        searchView.setOnQueryTextFocusChangeListener(mainPresenter.searchChangeFocus())
-    }
-
     override fun startPhotoActivity(cameraIntent: Intent) {
         startActivityForResult(cameraIntent, CAMERA_RESULT)
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        saveResult(ResultOfActivity(requestCode, resultCode, data))
-        mainPresenter.resultActivityRecieved()
-    }
+    /*override fun startImageActivity(galleryIntent: Intent) {
+        startActivityForResult(galleryIntent, GALLERY_RESULT)
+    }*/
 
-    private fun saveResult(res : ResultOfActivity) {
-        resAct = res
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        resAct = ResultOfActivity(requestCode, resultCode, data)
+        presenter.resultActivityRecieved()
     }
 
     override fun getResult() : ResultOfActivity?{
@@ -123,15 +119,11 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
 
     override fun onResume() {
         super.onResume()
-        mainPresenter.adapterStartFill()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
+        presenter.updateList()
     }
 
     override fun showActionBar(title: Int) {
-        mActionMode = startSupportActionMode(listPresenter.onActionModeListener)
+        mActionMode = startSupportActionMode(presenter.onActionModeListener)
         mActionMode!!.title = getString(title)
     }
 
@@ -139,10 +131,8 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
         mActionMode!!.finish()
     }
 
-    override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int
-                                   /*, task: Array<String?>*/) {
+    override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
         val intentChange = Intent(this, activityClass)
-        /*intentChange.putExtra("data", task)*/
         intentChange.putExtra("id", itemId)
         startActivityForResult(intentChange, actResType)
     }
@@ -154,11 +144,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface, ActModeInterface {
     override fun createTaskActivity(taskType: Int, taskClass: Class<*>) {
         val textIntent = Intent(this, taskClass)
         startActivityForResult(textIntent, taskType)
-    }
-
-    override fun setColorButtons(positiveButton: Button, negativeButton: Button) {
-        positiveButton.setTextColor(resources.getColor(R.color.lum_red))
-        negativeButton.setTextColor(resources.getColor(R.color.lum_red))
     }
 
     companion object {

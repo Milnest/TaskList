@@ -1,5 +1,6 @@
 package com.milnest.tasklist.presentation.textScreen
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.AsyncTask
 import com.milnest.tasklist.R
@@ -13,7 +14,6 @@ import java.io.IOException
 class TextActivityPresenter {
 
     var textId : Int? = null
-    /*lateinit var textId : Int*/
     fun startFillUsed(){
         setStartText()
     }
@@ -82,7 +82,8 @@ class TextActivityPresenter {
         view = null
     }
 
-    internal inner class AsyncRequest : AsyncTask<TextActData, Void, Array<String?>>() {
+    @SuppressLint("StaticFieldLeak")
+    internal inner class AsyncRequest : AsyncTask<TextActData, Void, Array<String?>?>() {
 
         override fun doInBackground(vararg params: TextActData): Array<String?>? {
             try {
@@ -98,7 +99,7 @@ class TextActivityPresenter {
 
         }
 
-        override fun onPostExecute(strings: Array<String?>) {
+        override fun onPostExecute(strings: Array<String?>?) {
             super.onPostExecute(strings)
             if (strings != null) {
                 view!!.setText(strings/*, null*/)

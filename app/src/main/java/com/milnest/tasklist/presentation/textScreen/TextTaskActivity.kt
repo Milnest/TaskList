@@ -3,35 +3,30 @@ package com.milnest.tasklist.presentation.textScreen
 import android.app.Activity
 import android.content.Intent
 import android.os.AsyncTask
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v7.widget.Toolbar
+import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.EditText
 import android.widget.Toast
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.interactor.YandexTranslate
-
+import kotlinx.android.synthetic.main.activity_text_task.*
+import kotlinx.android.synthetic.main.toolbar.*
 import java.io.IOException
 
 /**Класс текстовой задачи
  */
 class TextTaskActivity : AppCompatActivity(), TextActInterface {
-    internal lateinit var taskTitle: EditText
-    internal lateinit var taskText: EditText
     private var title: String? = null
     private var text: String? = null
-    internal lateinit var mToolbar: Toolbar
     private val TAG = "TextTaskActivity"
     private var mId: Int? = null
     lateinit var presenter : TextActivityPresenter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_text_task)
-        setInitialData()
+        bindViews()
     }
 
     override fun onResume() {
@@ -39,19 +34,14 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         presenter.startFillUsed()
     }
 
-    private fun setInitialData() {
-        taskTitle = findViewById<View>(R.id.taskTitle) as EditText
-        taskText = findViewById<View>(R.id.taskText) as EditText
-        mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
+    private fun bindViews() {
         presenter = TextActivityPresenter()
         presenter.attachView(this)
-        setSupportActionBar(mToolbar)
+        setSupportActionBar(toolbar)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_task_text, menu)
-        /*Log.d(TAG, "onCreateOptionsMenu: Вызов инфлейтера");*/
-        /*taskTitle.setText("called");*/
         return true
     }
 
@@ -65,26 +55,14 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
             R.id.action_task_text_share -> {
                 presenter.saveButtonClicked()
                 presenter.shareButtonClicked()
-                /*val shareIntent = Intent(Intent.ACTION_SEND)
-                shareIntent.type = "text/plain"
-                shareIntent.putExtra(Intent.EXTRA_SUBJECT, title)
-                shareIntent.putExtra(Intent.EXTRA_TEXT, text)
-                startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))*/
             }
-            R.id.action_task_text_translate -> presenter.translationButtonClicked()/*translation()*/
-        }//finish();
+            R.id.action_task_text_translate -> presenter.translationButtonClicked()
+        }
         return true
     }
 
     override fun startShareAct(shareIntent: Intent){
         startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
-    }
-
-    /**Запускает метод в другом потоке для выполнения перевода
-     */
-    private fun translation() {
-        getText()
-        AsyncRequest().execute()
     }
 
     override fun saveText(data : Intent) {
@@ -117,8 +95,6 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         setResult(Activity.RESULT_CANCELED, Intent())
     }
 
-    /**Выполняет перевод данной текстовой задачи с русского на английский язык
-     */
     internal inner class AsyncRequest : AsyncTask<Void, Void, Array<String>>() {
 
         override fun doInBackground(vararg voids: Void): Array<String>? {

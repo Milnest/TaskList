@@ -16,39 +16,29 @@ import android.widget.TextView
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.other.utils.ChangeCbColor
+import kotlinx.android.synthetic.main.activity_list_task.*
+import kotlinx.android.synthetic.main.toolbar.*
 
 import java.util.ArrayList
 
 class ListTaskActivity : AppCompatActivity(), ListActInterface {
-    private var newCheckbox: TextView? = null
-    private var mToolbar: Toolbar? = null
     //Пара значений, чекбокс и его редактируемый текст
     override var mCheckBoxList: MutableList<Pair<*, *>>? = null
-    private var addListTaskLayout: LinearLayout? = null
-    private var mId: Int? = null
-    private var mListData: String? = null
     private var extras: Bundle? = null
     lateinit var presenter: ListActivityPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_list_task)
-        setInitialData()
+        bindViews()
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
-    private fun setInitialData() {
-        newCheckbox = findViewById<View>(R.id.new_cb) as TextView
-        mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        setSupportActionBar(mToolbar)
-        addListTaskLayout = findViewById<View>(R.id.add_list_task_layout) as LinearLayout
+    private fun bindViews() {
+        setSupportActionBar(toolbar)
         mCheckBoxList = ArrayList()
         extras = intent.extras
         initPresenter()
-        newCheckbox!!.setOnClickListener(presenter.addNewCheckBox())
+        new_cb.setOnClickListener(presenter.addNewCheckBox())
     }
 
     private fun initPresenter() {
@@ -99,10 +89,10 @@ class ListTaskActivity : AppCompatActivity(), ListActInterface {
                 LinearLayout.LayoutParams.WRAP_CONTENT, 0.3f)
         val cbAndText = Pair(cbToAdd, cbTextToAdd)
         mCheckBoxList!!.add(cbAndText)
-        addListTaskLayout!!.addView(innerLayout)
+        add_list_task_layout.addView(innerLayout)
         innerLayout.addView(delTextView)
         delTextView.setOnClickListener {
-            addListTaskLayout!!.removeView(innerLayout)
+            add_list_task_layout.removeView(innerLayout)
             mCheckBoxList!!.remove(cbAndText)
         }
     }

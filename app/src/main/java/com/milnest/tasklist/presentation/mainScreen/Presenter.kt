@@ -2,14 +2,16 @@ package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
-import android.support.v7.app.AlertDialog
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import com.milnest.tasklist.R
+import com.milnest.tasklist.application.app
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.other.utils.PhotoInteractor
@@ -19,47 +21,26 @@ import com.milnest.tasklist.presentation.textScreen.TextTaskActivity
 import com.milnest.tasklist.repository.DBRepository
 import java.io.File
 
+
 class Presenter(val view: PresenterInterface) {
-    private lateinit var dialog: android.support.v7.app.AlertDialog
-    private lateinit var builder: android.support.v7.app.AlertDialog.Builder/*AlertDialog.Builder*/
     var adapter: ItemsAdapter? = null
     lateinit var photoFile: File
+    lateinit var imageFile : File
+    var curPosDelete : Int? = null
+
+    fun setAdapter(itemsView: RecyclerView){
+        adapter = ItemsAdapter(onItemClickListener)
+        itemsView.adapter = adapter
+    }
 
     fun notifToActivity(toShow: Int) {
         view.showNotif(toShow);
     }
 
     fun initPhotoDialog(context: Context) {
-        builder = AlertDialog.Builder(context)
-        builder.setTitle("Добавление фото")
-                .setMessage("Выберите источник")
-                .setPositiveButton("Сделать новое") { dialog, id ->
-                    photoClicked()
-                }
-                .setNegativeButton("Взять из галереи") { dialog, id ->
-                    val photoPickerIntent = Intent(Intent.ACTION_PICK)
-                    photoPickerIntent.type = "image/*"
-                    view.createTaskActivity(photoPickerIntent, CAMERA_RESULT)
-                }
-        dialog = builder.create()
+
     }
 
-    /*override fun onFocusChange(v: View?, hasFocus: Boolean) {
-        //dbRepo.retrieve()
-        adapter!!.setData(dbRepo.getAllTasks())
-    }*/
-
-    /*override fun onQueryTextSubmit(query: String?): Boolean {
-        if (query == null) adapter!!.setData(dbRepo.getAllTasks())
-        return true
-    }
-
-    override fun onQueryTextChange(newText: String): Boolean {
-        adapter!!.setData(dbRepo.searchDynamicTask(newText))
-        return true
-    }*/
-
-    //Срабатывает, когда активити получает результат
     fun resultActivityRecieved() {
         processRes(view.getResult())
     }
@@ -87,33 +68,23 @@ class Presenter(val view: PresenterInterface) {
                 try {
                     DBRepository.addTask("", TaskListItem.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
                     adapter!!.setData(DBRepository.getAllTasks())
-
                 } catch (ex: Exception) {
                     notifToActivity(R.string.no_external)
                 }
             }
 
             GALLERY_RESULT -> {
-                //TODO: сохранение через внешнее хранилище
-                /*val imageUri: Uri?
-                val imageStream: InputStream?
                 try {
-                    imageUri = result.data!!.data
-                    imageStream = contentResolver.openInputStream(imageUri!!)
-                    val selectedImage = BitmapFactory.decodeStream(imageStream)
-                    val imgString = bitmapToBase64(selectedImage)
-                    taskDataInteractor!!.save("", ItemsAdapter.TYPE_ITEM_IMAGE, imgString)
-                    //initRecyclerView()
-                } catch (e: FileNotFoundException) {
-                    Toast.makeText(this, "Изображение не получено",
-                            Toast.LENGTH_SHORT).show()
-                } catch (ex: NullPointerException) {
-                    Toast.makeText(this, "Изображение не получено",
-                            Toast.LENGTH_SHORT).show()
-                } catch (exc: SQLException) {
-                    Toast.makeText(this, "Некорректное изображение",
-                            Toast.LENGTH_SHORT).show()
-                }*/
+                    val img = MediaStore.Images.Media.getBitmap(app.context.contentResolver,
+                            result.data!!.data)
+                    val file = PhotoInteractor.saveImageToFile(img)
+                    MediaStore.Images.Media.insertImage(app.context.contentResolver,
+                            file.canonicalPath, file.name, file.name)
+                    DBRepository.addTask("", TaskListItem.TYPE_ITEM_IMAGE, file.canonicalPath)
+                    adapter!!.setData(DBRepository.getAllTasks())
+                } catch (ex: Exception) {
+                    notifToActivity(R.string.no_external)
+                }
             }
             LIST_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
                 val extras = result.data!!.extras
@@ -147,11 +118,20 @@ class Presenter(val view: PresenterInterface) {
         view.startPhotoActivity(cameraIntent)
     }
 
+    /*fun saveImageToFile() {
+        val imageIntent = Intent(Intent.ACTION_PICK)
+
+        imageFile = PhotoInteractor.createFilePath()
+        imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile))
+
+        view.startImageActivity(imageIntent)
+    }*/
+
     fun attachAdapter(itemsAdapter: ItemsAdapter) {
         adapter = itemsAdapter
     }
 
-    fun adapterStartFill() {
+    fun updateList() {
         adapter!!.setData(DBRepository.getAllTasks())
     }
 
@@ -164,10 +144,11 @@ class Presenter(val view: PresenterInterface) {
     }
 
     fun addImgTask() = View.OnClickListener {
-        dialog = builder.show()
+        view.showDialog()
+        /*dialog = builder.show()
         val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
         val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-        view.setColorButtons(positiveButton, negativeButton)
+        view.setColorButtons(positiveButton, negativeButton)*/
     }
 
     fun searchChangeFocus() = View.OnFocusChangeListener { view: View, b: Boolean ->
@@ -175,7 +156,7 @@ class Presenter(val view: PresenterInterface) {
     }
 
     val searchListener: SearchView.OnQueryTextListener
-        get() = object : SearchView.OnQueryTextListener{
+        get() = object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (query == null) adapter!!.setData(DBRepository.getAllTasks())
                 return true
@@ -184,6 +165,70 @@ class Presenter(val view: PresenterInterface) {
             override fun onQueryTextChange(newText: String): Boolean {
                 adapter!!.setData(DBRepository.searchDynamicTask(newText))
                 return true
+            }
+        }
+
+    val onItemClickListener : ItemsAdapter.IClickListener
+        get() = object : ItemsAdapter.IClickListener {
+            override fun onItemClick(position: Int) {
+                val id = adapter!!.getItemId(position).toInt()
+                val type = adapter!!.getItemViewType(position)
+
+                when (type) {
+                    TaskListItem.TYPE_ITEM_TEXT -> {
+                        view.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
+                                id, MainActivity.TEXT_RESULT/*, arrayOf((item as TextTaskListItem).name, item.text)*/)
+                    }
+                    TaskListItem.TYPE_ITEM_LIST -> {
+                        view.startTaskActivity(ListTaskActivity::class.java,
+                                id, MainActivity.LIST_RESULT/*, taskRepo.getTaskById(id)*/)
+                    }
+                }
+            }
+
+            override fun onItemLongClick(position: Int): Boolean {
+                if (view.mActionMode == null) {
+                    curPosDelete = position
+                    view.showActionBar(R.string.action_mode)
+                    //Добавление выделения при выборе
+                    adapter!!.addSelection(position)
+                } else {
+                    curPosDelete = null
+                    view.closeActionBar()
+                    //Сброс выделения
+                    adapter!!.removeSelection()
+                }
+                return true
+            }
+        }
+
+    val onActionModeListener : android.support.v7.view.ActionMode.Callback
+        get() = object : android.support.v7.view.ActionMode.Callback {
+            override fun onCreateActionMode(mode: android.support.v7.view.ActionMode, menu: Menu):
+                    Boolean {
+                val inflater = mode.menuInflater
+                inflater.inflate(R.menu.menu_context_task, menu)
+                return true
+            }
+
+            override fun onPrepareActionMode(mode: android.support.v7.view.ActionMode, menu: Menu):
+                    Boolean {
+                return false
+            }
+
+            override fun onActionItemClicked(mode: android.support.v7.view.ActionMode,
+                                             item: MenuItem): Boolean {
+                if (curPosDelete is Int) {
+                    DBRepository.deleteTask(adapter!!.getItemId(curPosDelete!!).toInt())
+                    adapter!!.setData(DBRepository.getAllTasks())
+                    view.mActionMode!!.finish()
+                }
+                return false
+            }
+
+            override fun onDestroyActionMode(mode: android.support.v7.view.ActionMode) {
+                adapter!!.removeSelection()
+                view.mActionMode = null
             }
         }
 

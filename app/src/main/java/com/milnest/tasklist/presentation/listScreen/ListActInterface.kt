@@ -6,7 +6,7 @@ import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 
 interface ListActInterface {
     var mCheckBoxList: MutableList<Pair<*, *>>?
-    fun getStartText() : Intent?
+    //fun getStartText() : Intent?
 
     fun fillStart(cbList: ListOfCheckboxesTaskListItem)
     fun firstFill()

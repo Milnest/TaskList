@@ -10,14 +10,14 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.SearchView
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import com.milnest.tasklist.R
+import com.milnest.tasklist.application.IntentData
 import com.milnest.tasklist.entities.ResultOfActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.toolbar.*
 
 
 class MainActivity : AppCompatActivity(), PresenterInterface {
@@ -26,8 +26,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     private val mLinearLayoutManager = LinearLayoutManager(this)
     private lateinit var searchView: SearchView
     private val presenter = Presenter(this)
-    private var resAct: ResultOfActivity? = null
-    private lateinit var dialogBuilder : AlertDialog.Builder
+    private lateinit var dialog : AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,41 +35,40 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     }
 
     private fun bindViews() {
-        val mToolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        setSupportActionBar(mToolbar)
+        setSupportActionBar(toolbar)
         presenter.setAdapter(recyclerView)
         recyclerView.layoutManager = mLinearLayoutManager
 
-        dialogBuilder = AlertDialog.Builder(this)
-        dialogBuilder.setTitle("Добавление фото")
-                .setMessage("Выберите источник")
-                .setPositiveButton("Сделать новое") { _, _ ->
+        val dialogBuilder = AlertDialog.Builder(this)
+        dialogBuilder.setTitle(getString(R.string.add_photo))
+                .setMessage(getString(R.string.choose_source))
+                .setPositiveButton(getString(R.string.new_cam_photo)) { _, _ ->
                     presenter.photoClicked()
                 }
-                .setNegativeButton("Взять из галереи") { _, _ ->
-                    //presenter.takeFromGallery()
-                    //presenter.saveImageToFile()
+                .setNegativeButton(getString(R.string.gallery_photo)) { _, _ ->
                     openGallery()
                 }
-        dialogBuilder.create()
-
+        dialog = dialogBuilder.create()
         add_task_text.setOnClickListener(presenter.addTextTask())
         add_task_list.setOnClickListener(presenter.addListTask())
         add_task_photo.setOnClickListener(presenter.addImgTask())
     }
 
     override fun showDialog() {
-        val dialog = dialogBuilder.show()
-        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-        val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-        positiveButton.setTextColor(resources.getColor(R.color.lum_red))
-        negativeButton.setTextColor(resources.getColor(R.color.lum_red))
+        if (!dialog.isShowing) {
+            presenter.setUpDialogStyle(dialog)
+            dialog.show()
+        }
+    }
+
+    override fun finishActionMode() {
+        mActionMode!!.finish()
     }
 
     fun openGallery() {
         val photoPickerIntent = Intent(Intent.ACTION_PICK)
         photoPickerIntent.type = "image/*"
-        createTaskActivity(photoPickerIntent, GALLERY_RESULT)
+        createTaskActivity(photoPickerIntent, IntentData.GALLERY_RESULT)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -97,20 +95,11 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     }
 
     override fun startPhotoActivity(cameraIntent: Intent) {
-        startActivityForResult(cameraIntent, CAMERA_RESULT)
+        startActivityForResult(cameraIntent, IntentData.CAMERA_RESULT)
     }
-
-    /*override fun startImageActivity(galleryIntent: Intent) {
-        startActivityForResult(galleryIntent, GALLERY_RESULT)
-    }*/
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        resAct = ResultOfActivity(requestCode, resultCode, data)
-        presenter.resultActivityRecieved()
-    }
-
-    override fun getResult() : ResultOfActivity?{
-        return resAct
+        presenter.processViewRes(ResultOfActivity(requestCode, resultCode, data))
     }
 
     override fun showNotif(toShow: Int) {
@@ -133,7 +122,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
         val intentChange = Intent(this, activityClass)
-        intentChange.putExtra("id", itemId)
+        intentChange.putExtra(/*"id"*/IntentData.ID, itemId)
         startActivityForResult(intentChange, actResType)
     }
 
@@ -145,16 +134,4 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         val textIntent = Intent(this, taskClass)
         startActivityForResult(textIntent, taskType)
     }
-
-    companion object {
-        val NAME = "NAME"
-        val TEXT = "TEXT"
-        val ID = "ID"
-        val LIST = "LIST"
-        val TEXT_RESULT = 1
-        private val CAMERA_RESULT = 2
-        private val GALLERY_RESULT = 3
-        val LIST_RESULT = 4
-    }
-
 }

@@ -10,10 +10,11 @@ interface PresenterInterface{
     fun closeActionBar()
     fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int)
     fun showNotif(toShow : Int)
-    fun getResult() : ResultOfActivity?
+    /*fun getResult() : ResultOfActivity?*/
     fun startPhotoActivity(cameraIntent: Intent)
     /*fun startImageActivity(galleryIntent: Intent)*/
     fun createTaskActivity(createTaskIntent : Intent, taskType : Int)
     fun createTaskActivity(taskType: Int, taskClass: Class<*>)
     fun showDialog()
+    fun finishActionMode()
 }

@@ -44,13 +44,8 @@ class ListTaskActivity : AppCompatActivity(), ListActInterface {
     private fun initPresenter() {
         presenter = ListActivityPresenter()
         presenter.attachView(this)
-        presenter.startFillUsed()
+        presenter.setStartList(intent.extras)
     }
-
-    override fun getStartText(): Intent?{
-        return intent
-    }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_task_list, menu)

@@ -1,10 +1,12 @@
 package com.milnest.tasklist.presentation.listScreen
 
 import android.content.Intent
+import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
 import com.milnest.tasklist.R
+import com.milnest.tasklist.application.IntentData
 import com.milnest.tasklist.entities.CheckboxTaskListItem
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.entities.TaskListItem
@@ -37,7 +39,7 @@ class ListActivityPresenter {
             taskCbList = ListOfCheckboxesTaskListItem(
                     listId!!, "", TaskListItem.TYPE_ITEM_LIST,
                     ArrayList())
-            data.putExtra(MainActivity.ID, listId!!)
+            data.putExtra(IntentData.ID, listId!!)
         } else {
             taskCbList = ListOfCheckboxesTaskListItem(
                     0, "", TaskListItem.TYPE_ITEM_LIST,
@@ -55,18 +57,13 @@ class ListActivityPresenter {
         taskCbList.cbList = itemList
 
         //id просто игнорируется при добавлении нового активити
-        data.putExtra(MainActivity.LIST, JsonAdapter.toJson(taskCbList))
+        data.putExtra(IntentData.LIST, JsonAdapter.toJson(taskCbList))
         view!!.recieveList(data)
     }
 
-    fun startFillUsed(){
-        setStartList()
-    }
-
-    private fun setStartList(){
-        val extras = view!!.getStartText()!!.extras
+    fun setStartList(extras : Bundle?){
         if (extras != null) {
-            listId = extras.getInt("id")
+            listId = extras.getInt(IntentData.ID)
             val cbList = DBRepository.getTaskById(listId!!)
 
             view!!.fillStart(cbList as ListOfCheckboxesTaskListItem)

@@ -1,15 +1,19 @@
 package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
+import android.support.v7.app.AlertDialog
+import android.support.v7.view.ActionMode
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.milnest.tasklist.R
+import com.milnest.tasklist.application.IntentData
 import com.milnest.tasklist.application.app
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.TaskListItem
@@ -24,9 +28,9 @@ import java.io.File
 class Presenter(val view: PresenterInterface) {
     var adapter: ItemsAdapter? = null
     lateinit var photoFile: File
-    var curPosDelete : Int? = null
+    var curPosDelete: Int? = null
 
-    fun setAdapter(itemsView: RecyclerView){
+    fun setAdapter(itemsView: RecyclerView) {
         adapter = ItemsAdapter(onItemClickListener)
         itemsView.adapter = adapter
     }
@@ -35,18 +39,13 @@ class Presenter(val view: PresenterInterface) {
         view.showNotif(toShow);
     }
 
-    fun resultActivityRecieved() {
-        processRes(view.getResult())
-    }
-
-    private fun processRes(result: ResultOfActivity?) {
+    fun processViewRes(result: ResultOfActivity?) {
         when (result!!.requestCode) {
-            TEXT_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
-                val extras = result.data!!.extras /*if (data!!.extras != null) data.extras else null*/
-                if (extras != null) {
-                    val name = result.data.getStringExtra(NAME)
-                    val text = result.data.getStringExtra(TEXT)
-                    val get_id = result.data.getIntExtra(ID, -1)
+            IntentData.TEXT_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
+                if (result.data!!.extras != null) {
+                    val name = result.data.getStringExtra(IntentData.NAME)
+                    val text = result.data.getStringExtra(IntentData.TEXT)
+                    val get_id = result.data.getIntExtra(IntentData.ID, -1)
                     if (get_id != -1) {
                         DBRepository.updateTask(get_id, name, TaskListItem.TYPE_ITEM_TEXT, text)
                         adapter!!.setData(DBRepository.getAllTasks())
@@ -58,7 +57,7 @@ class Presenter(val view: PresenterInterface) {
             } else {
                 notifToActivity(R.string.save_canceled)
             }
-            CAMERA_RESULT -> {
+            IntentData.CAMERA_RESULT -> {
                 try {
                     DBRepository.addTask("", TaskListItem.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
                     adapter!!.setData(DBRepository.getAllTasks())
@@ -67,7 +66,7 @@ class Presenter(val view: PresenterInterface) {
                 }
             }
 
-            GALLERY_RESULT -> {
+            IntentData.GALLERY_RESULT -> {
                 try {
                     val img = MediaStore.Images.Media.getBitmap(app.context.contentResolver,
                             result.data!!.data)
@@ -80,11 +79,11 @@ class Presenter(val view: PresenterInterface) {
                     notifToActivity(R.string.no_external)
                 }
             }
-            LIST_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
+            IntentData.LIST_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
                 val extras = result.data!!.extras
                 if (extras != null) {
-                    val text = result.data.getStringExtra(LIST)
-                    val get_id = result.data.getIntExtra(ID, -1)
+                    val text = result.data.getStringExtra(IntentData.LIST)
+                    val get_id = result.data.getIntExtra(IntentData.ID, -1)
                     if (get_id != -1) {
                         DBRepository.updateTask(get_id, "",
                                 TaskListItem.TYPE_ITEM_LIST, text)
@@ -117,11 +116,11 @@ class Presenter(val view: PresenterInterface) {
     }
 
     fun addTextTask() = View.OnClickListener {
-        view.createTaskActivity(TEXT_RESULT, TextTaskActivity::class.java)
+        view.createTaskActivity(IntentData.TEXT_RESULT, TextTaskActivity::class.java)
     }
 
     fun addListTask() = View.OnClickListener {
-        view.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
+        view.createTaskActivity(IntentData.LIST_RESULT, ListTaskActivity::class.java)
     }
 
     fun addImgTask() = View.OnClickListener {
@@ -130,6 +129,13 @@ class Presenter(val view: PresenterInterface) {
 
     fun searchChangeFocus() = View.OnFocusChangeListener { view: View, b: Boolean ->
         adapter!!.setData(DBRepository.getAllTasks())
+    }
+
+    fun setUpDialogStyle(dialog : AlertDialog) {
+        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        positiveButton.setTextColor(app.context.resources.getColor(R.color.lum_red))
+        negativeButton.setTextColor(app.context.resources.getColor(R.color.lum_red))
     }
 
     val searchListener: SearchView.OnQueryTextListener
@@ -145,7 +151,7 @@ class Presenter(val view: PresenterInterface) {
             }
         }
 
-    val onItemClickListener : ItemsAdapter.IClickListener
+    private val onItemClickListener: ItemsAdapter.IClickListener
         get() = object : ItemsAdapter.IClickListener {
             override fun onItemClick(position: Int) {
                 val id = adapter!!.getItemId(position).toInt()
@@ -154,11 +160,11 @@ class Presenter(val view: PresenterInterface) {
                 when (type) {
                     TaskListItem.TYPE_ITEM_TEXT -> {
                         view.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
-                                id, MainActivity.TEXT_RESULT/*, arrayOf((item as TextTaskListItem).name, item.text)*/)
+                                id, IntentData.TEXT_RESULT/*, arrayOf((item as TextTaskListItem).name, item.text)*/)
                     }
                     TaskListItem.TYPE_ITEM_LIST -> {
                         view.startTaskActivity(ListTaskActivity::class.java,
-                                id, MainActivity.LIST_RESULT/*, taskRepo.getTaskById(id)*/)
+                                id, IntentData.LIST_RESULT/*, taskRepo.getTaskById(id)*/)
                     }
                 }
             }
@@ -179,45 +185,30 @@ class Presenter(val view: PresenterInterface) {
             }
         }
 
-    val onActionModeListener : android.support.v7.view.ActionMode.Callback
-        get() = object : android.support.v7.view.ActionMode.Callback {
-            override fun onCreateActionMode(mode: android.support.v7.view.ActionMode, menu: Menu):
+    val onActionModeListener: ActionMode.Callback
+        get() = object : ActionMode.Callback {
+            override fun onCreateActionMode(mode: ActionMode, menu: Menu):
                     Boolean {
                 val inflater = mode.menuInflater
                 inflater.inflate(R.menu.menu_context_task, menu)
                 return true
             }
 
-            override fun onPrepareActionMode(mode: android.support.v7.view.ActionMode, menu: Menu):
-                    Boolean {
-                return false
-            }
+            override fun onPrepareActionMode(mode: ActionMode, menu: Menu) = false
 
-            override fun onActionItemClicked(mode: android.support.v7.view.ActionMode,
-                                             item: MenuItem): Boolean {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
                 if (curPosDelete is Int) {
                     DBRepository.deleteTask(adapter!!.getItemId(curPosDelete!!).toInt())
                     adapter!!.setData(DBRepository.getAllTasks())
-                    view.mActionMode!!.finish()
+                    view.finishActionMode()
+                    /*view.mActionMode!!.finish()*/ //
                 }
                 return false
             }
 
-            override fun onDestroyActionMode(mode: android.support.v7.view.ActionMode) {
+            override fun onDestroyActionMode(mode: ActionMode) {
                 adapter!!.removeSelection()
                 view.mActionMode = null
             }
         }
-
-    companion object {
-        val NAME = "NAME"
-        val TEXT = "TEXT"
-        val ID = "ID"
-        val LIST = "LIST"
-        private val TEXT_RESULT = 1
-        private val CAMERA_RESULT = 2
-        private val GALLERY_RESULT = 3
-        private val LIST_RESULT = 4
-    }
-
 }

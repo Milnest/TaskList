@@ -26,4 +26,8 @@
     <string name="no_external">Нет доступа к хранилищу</string>
     <string name="task_changed">Задача изменена</string>
     <string name="task_chanceled">Ошибка изменения</string>
+    <string name="add_photo">Добавление фото</string>
+    <string name="choose_source">Выберите источник</string>
+    <string name="new_cam_photo">Сделать новое</string>
+    <string name="gallery_photo">Взять из галереи</string>
 </resources>

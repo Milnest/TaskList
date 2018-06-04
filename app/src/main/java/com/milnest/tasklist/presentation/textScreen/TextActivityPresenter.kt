@@ -3,61 +3,41 @@ package com.milnest.tasklist.presentation.textScreen
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.AsyncTask
+import android.os.Bundle
+import android.support.v4.app.NotificationCompatExtras
 import com.milnest.tasklist.R
+import com.milnest.tasklist.application.IntentData
 import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.interactor.YandexTranslate
-import com.milnest.tasklist.presentation.mainScreen.MainActivity
 import com.milnest.tasklist.repository.DBRepository
 import java.io.IOException
 
 class TextActivityPresenter {
+    var textId: Int? = null
+    private val savedIntent = Intent()
+    var view: TextActInterface? = null
 
-    var textId : Int? = null
-    fun startFillUsed(){
-        setStartText()
-    }
-
-    private fun setStartText(){
-        val extras = view!!.getStartText()!!.extras
-        if (extras != null) {
-            val id = extras.getInt("id")
-            textId = id
+    fun setStartText(extras: Bundle?) {
+        if (extras != null){
+            textId = extras.getInt(/*"id"*/IntentData.ID)
             val textTask = DBRepository.getTaskById(textId!!) as TextTaskListItem?
-            val name = textTask!!.name
-            val text = textTask.text
-            val data = arrayOf(name, text)
-            view!!.setText(data/*, id*/)
+            val data = arrayOf(textTask!!.name, textTask.text)
+            view!!.setText(data)
         }
     }
 
-    fun saveButtonClicked(){
-        doSave()
-    }
+    fun doSave(text: TextActData) {
+        savedIntent.putExtra(IntentData.NAME, text.taskTitle)
+        savedIntent.putExtra(IntentData.TEXT, text.taskText)
 
-    private fun doSave() {
-        val text = view!!.getText()
-        val data = Intent()
-        data.putExtra(MainActivity.NAME, text.taskTitle)
-        data.putExtra(MainActivity.TEXT, text.taskText)
-        /*val id : Int? = text.taskId
-        if (id != null) {
-            data.putExtra(MainActivity.ID, id)
-        }*/
-        val id = textId
         if (textId != null) {
-            data.putExtra(MainActivity.ID, id)
+            savedIntent.putExtra(IntentData.ID, textId!!)
         }
-        view!!.saveText(data)
-
+        /*view!!.saveText(data)*/
     }
 
-    fun shareButtonClicked(){
-        doShare()
-    }
-
-    private fun doShare() {
-        val text = view!!.getText()
+    fun doShare(text: TextActData) {
         val shareIntent = Intent(Intent.ACTION_SEND)
         shareIntent.type = "text/plain"
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, text.taskTitle)
@@ -65,15 +45,10 @@ class TextActivityPresenter {
         view!!.startShareAct(shareIntent)
     }
 
-    fun translationButtonClicked(){
-        doTranslation()
+    fun doTranslation(textActData: TextActData) {
+        AsyncRequest().execute(textActData)
     }
 
-    private fun doTranslation() {
-        AsyncRequest().execute(view!!.getText())
-    }
-
-    var view: TextActInterface? = null
     fun attachView(activity: TextActInterface) {
         view = activity
     }
@@ -82,21 +57,23 @@ class TextActivityPresenter {
         view = null
     }
 
+    fun closeView() {
+        view!!.saveText(savedIntent)
+        view!!.finishView()
+    }
+
     @SuppressLint("StaticFieldLeak")
     internal inner class AsyncRequest : AsyncTask<TextActData, Void, Array<String?>?>() {
 
-        override fun doInBackground(vararg params: TextActData): Array<String?>? {
-            try {
-                val translatedTitle = YandexTranslate.translate("ru-en",
-                        params[0].taskTitle)
-                val translatedText = YandexTranslate.translate("ru-en",
-                        params[0].taskText)
-                return arrayOf(translatedTitle, translatedText)
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return null
-            }
-
+        override fun doInBackground(vararg params: TextActData): Array<String?>? = try {
+            val translatedTitle = YandexTranslate.translate("ru-en",
+                    params[0].taskTitle)
+            val translatedText = YandexTranslate.translate("ru-en",
+                    params[0].taskText)
+            arrayOf(translatedTitle, translatedText)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
         }
 
         override fun onPostExecute(strings: Array<String?>?) {

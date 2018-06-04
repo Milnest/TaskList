@@ -1,7 +1,6 @@
 package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
@@ -25,7 +24,6 @@ import java.io.File
 class Presenter(val view: PresenterInterface) {
     var adapter: ItemsAdapter? = null
     lateinit var photoFile: File
-    lateinit var imageFile : File
     var curPosDelete : Int? = null
 
     fun setAdapter(itemsView: RecyclerView){
@@ -35,10 +33,6 @@ class Presenter(val view: PresenterInterface) {
 
     fun notifToActivity(toShow: Int) {
         view.showNotif(toShow);
-    }
-
-    fun initPhotoDialog(context: Context) {
-
     }
 
     fun resultActivityRecieved() {
@@ -118,19 +112,6 @@ class Presenter(val view: PresenterInterface) {
         view.startPhotoActivity(cameraIntent)
     }
 
-    /*fun saveImageToFile() {
-        val imageIntent = Intent(Intent.ACTION_PICK)
-
-        imageFile = PhotoInteractor.createFilePath()
-        imageIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile))
-
-        view.startImageActivity(imageIntent)
-    }*/
-
-    fun attachAdapter(itemsAdapter: ItemsAdapter) {
-        adapter = itemsAdapter
-    }
-
     fun updateList() {
         adapter!!.setData(DBRepository.getAllTasks())
     }
@@ -145,10 +126,6 @@ class Presenter(val view: PresenterInterface) {
 
     fun addImgTask() = View.OnClickListener {
         view.showDialog()
-        /*dialog = builder.show()
-        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-        val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-        view.setColorButtons(positiveButton, negativeButton)*/
     }
 
     fun searchChangeFocus() = View.OnFocusChangeListener { view: View, b: Boolean ->

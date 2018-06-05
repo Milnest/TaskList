@@ -23,20 +23,25 @@ import com.milnest.tasklist.presentation.listScreen.ListTaskActivity
 import com.milnest.tasklist.presentation.textScreen.TextTaskActivity
 import com.milnest.tasklist.repository.DBRepository
 import java.io.File
+import java.lang.ref.WeakReference
 
 
-class Presenter(val view: PresenterInterface) {
-    var adapter: ItemsAdapter? = null
+class Presenter() {
+    val adapter = ItemsAdapter(onItemClickListener)
     lateinit var photoFile: File
-    var curPosDelete: Int? = null
+    var curPosDelete = -1
+    lateinit var view: WeakReference<PresenterInterface>
+
+    fun attachView(view: PresenterInterface) {
+        this.view = WeakReference(view)
+    }
 
     fun setAdapter(itemsView: RecyclerView) {
-        adapter = ItemsAdapter(onItemClickListener)
         itemsView.adapter = adapter
     }
 
     fun notifToActivity(toShow: Int) {
-        view.showNotif(toShow);
+        view.get()?.showNotif(toShow);
     }
 
     fun processViewRes(result: ResultOfActivity?) {
@@ -48,10 +53,10 @@ class Presenter(val view: PresenterInterface) {
                     val get_id = result.data.getIntExtra(IntentData.ID, -1)
                     if (get_id != -1) {
                         DBRepository.updateTask(get_id, name, TaskListItem.TYPE_ITEM_TEXT, text)
-                        adapter!!.setData(DBRepository.getAllTasks())
+                        adapter.setData(DBRepository.getAllTasks())
                     } else {
                         DBRepository.addTask(name, TaskListItem.TYPE_ITEM_TEXT, text)
-                        adapter!!.setData(DBRepository.getAllTasks())
+                        adapter.setData(DBRepository.getAllTasks())
                     }
                 }
             } else {
@@ -60,7 +65,7 @@ class Presenter(val view: PresenterInterface) {
             IntentData.CAMERA_RESULT -> {
                 try {
                     DBRepository.addTask("", TaskListItem.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
-                    adapter!!.setData(DBRepository.getAllTasks())
+                    adapter.setData(DBRepository.getAllTasks())
                 } catch (ex: Exception) {
                     notifToActivity(R.string.no_external)
                 }
@@ -74,7 +79,7 @@ class Presenter(val view: PresenterInterface) {
                     MediaStore.Images.Media.insertImage(app.context.contentResolver,
                             file.canonicalPath, file.name, file.name)
                     DBRepository.addTask("", TaskListItem.TYPE_ITEM_IMAGE, file.canonicalPath)
-                    adapter!!.setData(DBRepository.getAllTasks())
+                    adapter.setData(DBRepository.getAllTasks())
                 } catch (ex: Exception) {
                     notifToActivity(R.string.no_external)
                 }
@@ -87,10 +92,10 @@ class Presenter(val view: PresenterInterface) {
                     if (get_id != -1) {
                         DBRepository.updateTask(get_id, "",
                                 TaskListItem.TYPE_ITEM_LIST, text)
-                        adapter!!.setData(DBRepository.getAllTasks())
+                        adapter.setData(DBRepository.getAllTasks())
                     } else {
                         DBRepository.addTask("", TaskListItem.TYPE_ITEM_LIST, text)
-                        adapter!!.setData(DBRepository.getAllTasks())
+                        adapter.setData(DBRepository.getAllTasks())
                     }
 
                 }
@@ -108,30 +113,30 @@ class Presenter(val view: PresenterInterface) {
         photoFile = PhotoInteractor.createFilePath()
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile))
 
-        view.startPhotoActivity(cameraIntent)
+        view.get()?.startPhotoActivity(cameraIntent)
     }
 
     fun updateList() {
-        adapter!!.setData(DBRepository.getAllTasks())
+        adapter.setData(DBRepository.getAllTasks())
     }
 
     fun addTextTask() = View.OnClickListener {
-        view.createTaskActivity(IntentData.TEXT_RESULT, TextTaskActivity::class.java)
+        view.get()?.createTaskActivity(IntentData.TEXT_RESULT, TextTaskActivity::class.java)
     }
 
     fun addListTask() = View.OnClickListener {
-        view.createTaskActivity(IntentData.LIST_RESULT, ListTaskActivity::class.java)
+        view.get()?.createTaskActivity(IntentData.LIST_RESULT, ListTaskActivity::class.java)
     }
 
     fun addImgTask() = View.OnClickListener {
-        view.showDialog()
+        view.get()?.showDialog()
     }
 
     fun searchChangeFocus() = View.OnFocusChangeListener { view: View, b: Boolean ->
-        adapter!!.setData(DBRepository.getAllTasks())
+        adapter.setData(DBRepository.getAllTasks())
     }
 
-    fun setUpDialogStyle(dialog : AlertDialog) {
+    fun setUpDialogStyle(dialog: AlertDialog) {
         val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
         val negativeButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
         positiveButton.setTextColor(app.context.resources.getColor(R.color.lum_red))
@@ -140,13 +145,13 @@ class Presenter(val view: PresenterInterface) {
 
     val searchListener: SearchView.OnQueryTextListener
         get() = object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query == null) adapter!!.setData(DBRepository.getAllTasks())
+            override fun onQueryTextSubmit(query: String): Boolean {
+                if (query.isEmpty()) adapter.setData(DBRepository.getAllTasks())
                 return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                adapter!!.setData(DBRepository.searchDynamicTask(newText))
+                adapter.setData(DBRepository.searchDynamicTask(newText))
                 return true
             }
         }
@@ -154,32 +159,32 @@ class Presenter(val view: PresenterInterface) {
     private val onItemClickListener: ItemsAdapter.IClickListener
         get() = object : ItemsAdapter.IClickListener {
             override fun onItemClick(position: Int) {
-                val id = adapter!!.getItemId(position).toInt()
-                val type = adapter!!.getItemViewType(position)
+                val id = adapter.getItemId(position).toInt()
+                val type = adapter.getItemViewType(position)
 
                 when (type) {
                     TaskListItem.TYPE_ITEM_TEXT -> {
-                        view.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
+                        view.get()?.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
                                 id, IntentData.TEXT_RESULT/*, arrayOf((item as TextTaskListItem).name, item.text)*/)
                     }
                     TaskListItem.TYPE_ITEM_LIST -> {
-                        view.startTaskActivity(ListTaskActivity::class.java,
+                        view.get()?.startTaskActivity(ListTaskActivity::class.java,
                                 id, IntentData.LIST_RESULT/*, taskRepo.getTaskById(id)*/)
                     }
                 }
             }
 
             override fun onItemLongClick(position: Int): Boolean {
-                if (view.mActionMode == null) {
+                if (view.get()?.mActionMode == null) {
                     curPosDelete = position
-                    view.showActionBar(R.string.action_mode)
+                    view.get()?.showActionBar(R.string.action_mode)
                     //Добавление выделения при выборе
-                    adapter!!.addSelection(position)
+                    adapter.addSelection(position)
                 } else {
-                    curPosDelete = null
-                    view.closeActionBar()
+                    curPosDelete = -1
+                    view.get()?.closeActionBar()
                     //Сброс выделения
-                    adapter!!.removeSelection()
+                    adapter.removeSelection()
                 }
                 return true
             }
@@ -187,8 +192,7 @@ class Presenter(val view: PresenterInterface) {
 
     val onActionModeListener: ActionMode.Callback
         get() = object : ActionMode.Callback {
-            override fun onCreateActionMode(mode: ActionMode, menu: Menu):
-                    Boolean {
+            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
                 val inflater = mode.menuInflater
                 inflater.inflate(R.menu.menu_context_task, menu)
                 return true
@@ -197,18 +201,17 @@ class Presenter(val view: PresenterInterface) {
             override fun onPrepareActionMode(mode: ActionMode, menu: Menu) = false
 
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                if (curPosDelete is Int) {
-                    DBRepository.deleteTask(adapter!!.getItemId(curPosDelete!!).toInt())
-                    adapter!!.setData(DBRepository.getAllTasks())
-                    view.finishActionMode()
-                    /*view.mActionMode!!.finish()*/ //
+                if (curPosDelete != -1) {
+                    DBRepository.deleteTask(adapter.getItemId(curPosDelete))
+                    adapter.setData(DBRepository.getAllTasks())
+                    view.get()?.finishActionMode()
                 }
                 return false
             }
 
             override fun onDestroyActionMode(mode: ActionMode) {
-                adapter!!.removeSelection()
-                view.mActionMode = null
+                adapter.removeSelection()
+                view.get()?.mActionMode = null
             }
         }
 }

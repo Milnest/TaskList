@@ -2,7 +2,6 @@ package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.SearchManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -25,7 +24,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     private val mGridManager = GridLayoutManager(this, 2)
     private val mLinearLayoutManager = LinearLayoutManager(this)
     private lateinit var searchView: SearchView
-    private val presenter = Presenter(this)
+    private val presenter = Presenter()
     private lateinit var dialog : AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +35,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     private fun bindViews() {
         setSupportActionBar(toolbar)
+        presenter.attachView(this)
         presenter.setAdapter(recyclerView)
         recyclerView.layoutManager = mLinearLayoutManager
 
@@ -56,7 +56,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun showDialog() {
         if (!dialog.isShowing) {
-            presenter.setUpDialogStyle(dialog)
             dialog.show()
         }
     }

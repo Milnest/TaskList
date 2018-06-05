@@ -7,7 +7,7 @@ package com.milnest.tasklist.entities
 /**Общий класс задач для списка
  */
 open class TaskListItem
-(var id: Int, var name: String?, var type: Int) {
+(var id: Int, var name: String, var type: Int) {
     var isSelected: Boolean = false
 
     companion object {

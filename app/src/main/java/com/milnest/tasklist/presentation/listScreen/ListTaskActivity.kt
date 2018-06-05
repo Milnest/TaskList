@@ -4,28 +4,23 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.util.Pair
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
 import com.milnest.tasklist.other.utils.ChangeCbColor
 import kotlinx.android.synthetic.main.activity_list_task.*
+import kotlinx.android.synthetic.main.checkbox_item.view.*
 import kotlinx.android.synthetic.main.toolbar.*
-
-import java.util.ArrayList
+import java.util.*
 
 class ListTaskActivity : AppCompatActivity(), ListActInterface {
     //Пара значений, чекбокс и его редактируемый текст
-    override var mCheckBoxList: MutableList<Pair<*, *>>? = null
+    override var mCheckBoxList: MutableList<Pair<*, *>>? = null //TODO спросить где хранить это, в активити или презентере
     private var extras: Bundle? = null
-    lateinit var presenter: ListActivityPresenter
+    private lateinit var presenter: ListActivityPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,64 +48,30 @@ class ListTaskActivity : AppCompatActivity(), ListActInterface {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        //recieveList()
         presenter.saveClicked()
         finish()
         return true
     }
 
-    override fun newCb() {
-        val addedCb = CheckBox(this)
-        val addedCbText = EditText(this)
-        addCb(addedCb, addedCbText)
-    }
-
-    //Добавляет чекбокс с edit text и кнопкой для удаления на вывод пользователю
-    private fun addCb(cbToAdd: CheckBox, cbTextToAdd: EditText) {
-        ChangeCbColor.change(cbToAdd)
-        cbToAdd.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
-        val innerLayout = LinearLayout(this)
-        innerLayout.orientation = LinearLayout.HORIZONTAL
-        innerLayout.addView(cbToAdd)
-        cbTextToAdd.setHint(R.string.new_text)
-        cbTextToAdd.layoutParams = LinearLayout.LayoutParams(0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f)
-        innerLayout.addView(cbTextToAdd)
-        val delTextView = TextView(this)
-        delTextView.text = "X"
-        delTextView.setTextColor(resources.getColor(R.color.lum_red))
-        delTextView.layoutParams = LinearLayout.LayoutParams(0,
-                LinearLayout.LayoutParams.WRAP_CONTENT, 0.3f)
-        val cbAndText = Pair(cbToAdd, cbTextToAdd)
+    override fun addCb(cbState: Boolean, cbText:String?) {
+        val innerLayout = View.inflate(this, R.layout.checkbox_item, null)
+        ChangeCbColor.change(innerLayout.addedCb)
+        innerLayout.addedCb.isChecked = cbState
+        innerLayout.addedCbText.setText(cbText)
+        val cbAndText = Pair(innerLayout.addedCb, innerLayout.addedCbText)
         mCheckBoxList!!.add(cbAndText)
         add_list_task_layout.addView(innerLayout)
-        innerLayout.addView(delTextView)
-        delTextView.setOnClickListener {
+        innerLayout.delTextView.setOnClickListener {
             add_list_task_layout.removeView(innerLayout)
             mCheckBoxList!!.remove(cbAndText)
         }
     }
 
-    //Заполняет UI данными пришедщими с MainActivity для редактирования
     override fun fillStart(cbList: ListOfCheckboxesTaskListItem) {
-        //Добавляет чекбоксы с текстом программно
         for (item in cbList.cbList!!) {
-            val cb = CheckBox(this)
-            cb.isChecked = item.isCbState
-            val cbText = EditText(this)
-            cbText.setText(item.cbText)
-            addCb(cb, cbText)
+            addCb(item.isCbState, item.cbText)
         }
     }
-
-    //Первичное заполнение
-    override fun firstFill(){
-        val startCb = CheckBox(this)
-        val addedCbText = EditText(this)
-        addCb(startCb, addedCbText)
-    }
-
 
     override fun recieveList(data: Intent) {
         setResult(Activity.RESULT_OK, data)

@@ -115,7 +115,7 @@ object DBRepository {
                 arrayOf(id.toString())).toLong()
     }
 
-    fun deleteTask(id: Int) {
+    fun deleteTask(id: Long) {
         db.delete(TaskDatabaseHelper.TABLE, TaskDatabaseHelper.COLUMN_ID +
                 " =?", arrayOf(id.toString()))
     }

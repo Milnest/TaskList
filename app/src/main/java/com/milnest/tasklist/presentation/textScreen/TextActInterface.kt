@@ -5,8 +5,8 @@ import com.milnest.tasklist.entities.TextActData
 
 interface TextActInterface {
     fun saveText(data : Intent)
-    fun setText(titleAndText: Array<String?>)
+    fun setText(title: String, text: String)
     fun startShareAct(shareIntent: Intent)
     fun showToast(toShow : Int)
-    fun finishView()
+    fun finish()
 }

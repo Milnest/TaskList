@@ -9,7 +9,8 @@ interface ListActInterface {
     //fun getStartText() : Intent?
 
     fun fillStart(cbList: ListOfCheckboxesTaskListItem)
-    fun firstFill()
+    //fun firstFill()
     fun recieveList(data: Intent)
-    fun newCb()
+    fun addCb(cbState: Boolean, cbText:String?)
+   // fun newCb()
 }

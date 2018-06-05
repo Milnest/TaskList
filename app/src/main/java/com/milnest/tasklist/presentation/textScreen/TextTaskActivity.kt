@@ -15,8 +15,7 @@ import kotlinx.android.synthetic.main.toolbar.*
 /**Класс текстовой задачи
  */
 class TextTaskActivity : AppCompatActivity(), TextActInterface {
-    private val TAG = "TextTaskActivity"
-    lateinit var presenter : TextActivityPresenter
+    private lateinit var presenter : TextActivityPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,22 +43,18 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         val textActData = TextActData(taskTitle.text.toString(), taskText.text.toString())
         when (item.itemId) {
             R.id.action_task_text_save -> {
-                presenter.doSave(textActData)
+                presenter.saveClicked(textActData)
                 //saveText()
                 presenter.closeView()
             }
             R.id.action_task_text_share -> {
                 //testitb
                 //presenter.saveButtonClicked()
-                presenter.doShare(textActData)
+                presenter.shareClicked(textActData)
             }
-            R.id.action_task_text_translate -> presenter.doTranslation(textActData)
+            R.id.action_task_text_translate -> presenter.translationClicked(textActData)
         }
         return true
-    }
-
-    override fun finishView() {
-        finish()
     }
 
     override fun startShareAct(shareIntent: Intent){
@@ -70,9 +65,9 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         setResult(Activity.RESULT_OK, data)
     }
 
-    override fun setText(titleAndText: Array<String?>){
-        taskTitle.setText(titleAndText[0])
-        taskText.setText(titleAndText[1])
+    override fun setText(title: String, text: String){
+        taskTitle.setText(title)
+        taskText.setText(text)
     }
 
     override fun showToast(toShow: Int) {

@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.entities
 
 import android.graphics.Bitmap
 
@@ -8,4 +8,4 @@ import android.graphics.Bitmap
 /**Класс задачи-картинки
  */
 class ImgTaskListItem(id: Int, name: String, //private int mImage;
-                      var image: Bitmap?) : TaskListItem(id, name, TaskListItem.TYPE_ITEM_IMAGE)
+                      var image: Bitmap?) : TaskListItem(id, name, TYPE_ITEM_IMAGE)

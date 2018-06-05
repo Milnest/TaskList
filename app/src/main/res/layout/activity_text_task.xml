@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".TextTaskActivity">
+    tools:context=".presentation.textScreen.TextTaskActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:fitsSystemWindows="false">
 
         <include layout="@layout/toolbar" />
@@ -23,7 +23,7 @@
         android:layout_height="match_parent"
         android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".TextTaskActivity"
+        tools:context=".presentation.textScreen.TextTaskActivity"
         tools:showIn="@layout/activity_text_task">
 
         <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"

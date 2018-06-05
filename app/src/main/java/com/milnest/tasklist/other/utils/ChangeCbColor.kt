@@ -1,9 +1,9 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.other.utils
 
 import android.content.res.ColorStateList
 import android.support.v4.widget.CompoundButtonCompat
-import android.widget.CheckBox
 import android.widget.CompoundButton
+import com.milnest.tasklist.R
 
 /**
  * Created by t-yar on 26.04.2018.

@@ -1,4 +1,4 @@
-package com.milnest.tasklist
+package com.milnest.tasklist.entities
 
 /**
  * Created by t-yar on 17.04.2018.
@@ -6,11 +6,8 @@ package com.milnest.tasklist
 
 /**Общий класс задач для списка
  */
-open class TaskListItem/*public TaskListItem(String name, int type) {
-        mName = name;
-        mType = type;
-    }*/
-(var id: Int, var name: String?, var type: Int) {
+open class TaskListItem
+(var id: Int, var name: String, var type: Int) {
     var isSelected: Boolean = false
 
     companion object {

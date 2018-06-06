@@ -3,45 +3,45 @@ package com.milnest.tasklist.presentation.textScreen
 import android.content.Intent
 import android.os.Bundle
 import com.milnest.tasklist.R
-import com.milnest.tasklist.application.IntentData
-import com.milnest.tasklist.entities.TextActData
-import com.milnest.tasklist.entities.TextTaskListItem
-import com.milnest.tasklist.entities.observer.Observer
+import com.milnest.tasklist.IntentData
+import com.milnest.tasklist.entities.Task
+import com.milnest.tasklist.other.utils.observer.Observer
 import com.milnest.tasklist.interactor.Translate
-import com.milnest.tasklist.repository.DBRepository
+import com.milnest.tasklist.data.repository.DBRepository
+import java.lang.Exception
 import java.lang.ref.WeakReference
 
 class TextActivityPresenter : Observer {
-    var textId: Int? = null
+    var textId: Int = -1
     private val savedIntent = Intent()
     private lateinit var view: WeakReference<TextActInterface>
 
     fun setStartText(extras: Bundle?) {
         if (extras != null){
             textId = extras.getInt(IntentData.ID)
-            val textTask = DBRepository.getTaskById(textId!!) as TextTaskListItem
-            view.get()?.setText(textTask.name, textTask.text)
+            val textTask = DBRepository.getTaskById(textId) as Task
+            view.get()?.setText(textTask.title, textTask.data)
         }
     }
 
-    fun saveClicked(text: TextActData) {
-        savedIntent.putExtra(IntentData.NAME, text.taskTitle)
-        savedIntent.putExtra(IntentData.TEXT, text.taskText)
-
-        if (textId != null) {
-            savedIntent.putExtra(IntentData.ID, textId!!)
+    fun saveClicked(title : String, text:String) {
+        savedIntent.putExtra(IntentData.NAME, title)
+        savedIntent.putExtra(IntentData.TEXT, text)
+        if (textId != -1) {
+            savedIntent.putExtra(IntentData.ID, textId)
         }
+        closeView()
     }
 
-    fun shareClicked(text: TextActData) {
+    fun shareClicked(title : String, text:String) {
         val shareIntent = Intent(Intent.ACTION_SEND)
         shareIntent.type = "text/plain"
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, text.taskTitle)
-        shareIntent.putExtra(Intent.EXTRA_TEXT, text.taskText)
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, title)
+        shareIntent.putExtra(Intent.EXTRA_TEXT, text)
         view.get()?.startShareAct(shareIntent)
     }
 
-    fun translationClicked(textActData: TextActData) {
+    fun translationClicked(title : String, text:String) {
         /*if (TranslateInteractor.observer == null) {
             TranslateInteractor.registerObserver(this)
         }
@@ -52,7 +52,7 @@ class TextActivityPresenter : Observer {
         if (translate!!.observer == null) {
             translate.registerObserver(this)
         }
-        translate.execute(textActData)
+        translate.execute(Task(textId, title, Task.TYPE_ITEM_TEXT, text))
     }
 
     fun attachView(view: TextActInterface) {
@@ -64,13 +64,14 @@ class TextActivityPresenter : Observer {
         view.get()?.finish()
     }
 
-    override fun update(translatedText: TextActData?) {
-        if (translatedText != null) {
-            view.get()?.setText(translatedText.taskTitle, translatedText.taskText)
+    override fun update(translatedText: Task) {
+        try {
+            view.get()?.setText(translatedText.title, translatedText.data)
             view.get()?.showToast(R.string.translate_completed)
-        } else {
+        }catch (ex: Exception){
             view.get()?.showToast(R.string.translate_fail)
         }
+        //view.get()?.setText(title, text)
         //TranslateInteractor.removeObserver()
         Translate.getTranslateObj()!!.removeObserver()
         Translate.delTranslateObj()

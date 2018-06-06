@@ -9,7 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.milnest.tasklist.R
-import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
+import com.milnest.tasklist.entities.CheckboxTaskListItem
 import com.milnest.tasklist.other.utils.ChangeCbColor
 import kotlinx.android.synthetic.main.activity_list_task.*
 import kotlinx.android.synthetic.main.checkbox_item.view.*
@@ -67,8 +67,8 @@ class ListTaskActivity : AppCompatActivity(), ListActInterface {
         }
     }
 
-    override fun fillStart(cbList: ListOfCheckboxesTaskListItem) {
-        for (item in cbList.cbList!!) {
+    override fun fillStart(cbList: List<CheckboxTaskListItem>) {
+        for (item in cbList) {
             addCb(item.isCbState, item.cbText)
         }
     }

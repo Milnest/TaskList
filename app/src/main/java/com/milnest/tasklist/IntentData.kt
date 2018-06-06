@@ -1,4 +1,4 @@
-package com.milnest.tasklist.application
+package com.milnest.tasklist
 
 object IntentData {
     val NAME = "NAME"

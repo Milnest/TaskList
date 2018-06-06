@@ -5,12 +5,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
-import com.milnest.tasklist.application.IntentData
+import com.milnest.tasklist.IntentData
 import com.milnest.tasklist.entities.CheckboxTaskListItem
-import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
-import com.milnest.tasklist.entities.TaskListItem
 import com.milnest.tasklist.other.utils.JsonAdapter
-import com.milnest.tasklist.repository.DBRepository
+import com.milnest.tasklist.data.repository.DBRepository
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 
@@ -29,38 +27,28 @@ class ListActivityPresenter {
 
     private fun saveList() {
         val data = Intent()
-        val taskCbList: ListOfCheckboxesTaskListItem
-        if (listId != null) {
-            taskCbList = ListOfCheckboxesTaskListItem(
-                    listId!!, "", TaskListItem.TYPE_ITEM_LIST,
-                    ArrayList())
-            data.putExtra(IntentData.ID, listId!!)
-        } else {
-            taskCbList = ListOfCheckboxesTaskListItem(
-                    0, "", TaskListItem.TYPE_ITEM_LIST,
-                    ArrayList())
-        }
-
+        //val taskCbList: ListOfCheckboxesTaskListItem
         val itemList = ArrayList<CheckboxTaskListItem>()
         for (cb in view.get()?.mCheckBoxList!!) {
-            if (taskCbList.cbList != null) {
                 itemList.add(CheckboxTaskListItem((cb.second as EditText).text.toString(),
                         (cb.first as CheckBox).isChecked))
-            }
         }
-        taskCbList.cbList = itemList
+        val jsonStringOfList = JsonAdapter.toJson(itemList)
+
+        if (listId != null) data.putExtra(IntentData.ID, listId!!)
 
         //id просто игнорируется при добавлении нового активити
-        data.putExtra(IntentData.LIST, JsonAdapter.toJson(taskCbList))
+        data.putExtra(IntentData.LIST, jsonStringOfList)
         view.get()?.recieveList(data)
     }
 
     fun setStartList(extras : Bundle?){
         if (extras != null) {
             listId = extras.getInt(IntentData.ID)
-            val cbList = DBRepository.getTaskById(listId!!)
+            //val cbList = DBRepository.getTaskById(listId!!)!!.data
+            val cbList = JsonAdapter.fromJson(DBRepository.getTaskById(listId!!)!!.data)
 
-            view.get()?.fillStart(cbList as ListOfCheckboxesTaskListItem)
+            view.get()?.fillStart(cbList as List<CheckboxTaskListItem>)
         } else {
             view.get()?.addCb(false, "")
         }

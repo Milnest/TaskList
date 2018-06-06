@@ -1,17 +1,13 @@
-package com.milnest.tasklist.repository
+package com.milnest.tasklist.data.repository
 
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.milnest.tasklist.application.app
-import com.milnest.tasklist.db.TaskDatabaseHelper
-import com.milnest.tasklist.entities.ImgTaskListItem
-import com.milnest.tasklist.entities.TaskListItem
-import com.milnest.tasklist.entities.TextTaskListItem
-import com.milnest.tasklist.other.utils.JsonAdapter
-import com.milnest.tasklist.other.utils.PhotoInteractor
+import com.milnest.tasklist.app
+import com.milnest.tasklist.data.db.TaskDatabaseHelper
+import com.milnest.tasklist.entities.Task
 
 /**
  * Created by t-yar on 21.04.2018.
@@ -20,7 +16,7 @@ import com.milnest.tasklist.other.utils.PhotoInteractor
 object DBRepository {
     private var db: SQLiteDatabase = TaskDatabaseHelper(app.context).writableDatabase
 
-    fun getAllTasks(): MutableList<TaskListItem> {
+    fun getAllTasks(): MutableList<Task> {
         val cursor = db.query(TaskDatabaseHelper.TABLE, null,
                 null, null, null, null, null)
         val list = cursorToList(cursor)
@@ -28,8 +24,8 @@ object DBRepository {
         return list
     }
 
-    private fun cursorToList(cursor: Cursor): MutableList<TaskListItem> {
-        val taskList: MutableList<TaskListItem> = ArrayList()
+    private fun cursorToList(cursor: Cursor): MutableList<Task> {
+        val taskList: MutableList<Task> = ArrayList()
         val indexId = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_ID)
         val indexName = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_NAME)
         val indexContent = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_CONTENT)
@@ -45,17 +41,7 @@ object DBRepository {
             type = cursor.getInt(indexType)
             content = cursor.getString(indexContent)
 
-            when (type) {
-                TaskListItem.TYPE_ITEM_TEXT -> taskList.add(TextTaskListItem(id, name, content))
-                TaskListItem.TYPE_ITEM_IMAGE -> {
-                    taskList.add(ImgTaskListItem(id, name, PhotoInteractor.createImage(content)))
-                }
-                TaskListItem.TYPE_ITEM_LIST -> {
-                    val cbList = JsonAdapter.fromJson(content)
-                    cbList.id = id
-                    taskList.add(cbList)
-                }
-            }
+            taskList.add(Task(id, name, type, content))
         }
         return taskList
     }
@@ -73,7 +59,7 @@ object DBRepository {
 
     }
 
-    fun getTaskById(id: Int): TaskListItem? {
+    fun getTaskById(id: Int): Task? {
         val cursor = db.query(TaskDatabaseHelper.TABLE, null,
                 TaskDatabaseHelper.COLUMN_ID + "=$id", null, null, null, null)
 
@@ -91,17 +77,7 @@ object DBRepository {
         }
         cursor.close()
 
-        when (type) {
-            TaskListItem.TYPE_ITEM_TEXT -> return TextTaskListItem(id, name, content)
-            TaskListItem.TYPE_ITEM_IMAGE -> {
-                return ImgTaskListItem(id, name, PhotoInteractor.createImage(content))
-            }
-            TaskListItem.TYPE_ITEM_LIST -> {
-                return JsonAdapter.fromJson(content)
-            }
-        }
-        return null
-        //return arrayOf(name, content)
+        return Task(id, name, type, content)
     }
 
     fun updateTask(id: Int, name: String, type: Int, content: String) {
@@ -120,7 +96,7 @@ object DBRepository {
                 " =?", arrayOf(id.toString()))
     }
 
-    fun searchDynamicTask(data: String): MutableList<TaskListItem> {
+    fun searchDynamicTask(data: String): MutableList<Task> {
         val cursor = db.rawQuery("SELECT * FROM task_table " +
                 "WHERE name OR content LIKE '%$data%'", null)
         return cursorToList(cursor)

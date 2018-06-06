@@ -13,7 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.milnest.tasklist.R
-import com.milnest.tasklist.application.IntentData
+import com.milnest.tasklist.IntentData
 import com.milnest.tasklist.entities.ResultOfActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*

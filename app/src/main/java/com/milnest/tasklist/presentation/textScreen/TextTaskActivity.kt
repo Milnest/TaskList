@@ -8,7 +8,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.milnest.tasklist.R
-import com.milnest.tasklist.entities.TextActData
 import kotlinx.android.synthetic.main.activity_text_task.*
 import kotlinx.android.synthetic.main.toolbar.*
 
@@ -40,15 +39,16 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val textActData = TextActData(taskTitle.text.toString(), taskText.text.toString())
+        val title = taskTitle.text.toString()
+        val text = taskText.text.toString()
         when (item.itemId) {
             R.id.action_task_text_save -> {
-                presenter.saveClicked(textActData)
+                presenter.saveClicked(title, text)
             }
             R.id.action_task_text_share -> {
-                presenter.shareClicked(textActData)
+                presenter.shareClicked(title, text)
             }
-            R.id.action_task_text_translate -> presenter.translationClicked(textActData)
+            R.id.action_task_text_translate -> presenter.translationClicked(title, text)
         }
         return true
     }
@@ -61,9 +61,9 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         setResult(Activity.RESULT_OK, data)
     }
 
-    override fun setText(title: String, text: String){
-        taskTitle.setText(title)
-        taskText.setText(text)
+    override fun setText(title: String?, text: String?){
+        if (title is String) taskTitle.setText(title)
+        if (text is String) taskText.setText(text)
     }
 
     override fun showToast(toShow: Int) {

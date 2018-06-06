@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.milnest.tasklist.R
-import com.milnest.tasklist.application.app
+import com.milnest.tasklist.app
 import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.other.utils.ChangeCbColor
 import com.milnest.tasklist.other.utils.JsonAdapter

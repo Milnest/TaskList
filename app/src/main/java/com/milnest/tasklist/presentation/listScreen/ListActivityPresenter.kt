@@ -5,11 +5,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
-import com.milnest.tasklist.application.IntentData
+import com.milnest.tasklist.IntentData
 import com.milnest.tasklist.entities.CheckboxTaskListItem
-import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.other.utils.JsonAdapter
-import com.milnest.tasklist.repository.DBRepository
+import com.milnest.tasklist.data.repository.DBRepository
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 

@@ -1,12 +1,12 @@
-package com.milnest.tasklist.repository
+package com.milnest.tasklist.data.repository
 
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.milnest.tasklist.application.app
-import com.milnest.tasklist.db.TaskDatabaseHelper
+import com.milnest.tasklist.app
+import com.milnest.tasklist.data.db.TaskDatabaseHelper
 import com.milnest.tasklist.entities.Task
 
 /**

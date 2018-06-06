@@ -1,4 +1,4 @@
-package com.milnest.tasklist.repository
+package com.milnest.tasklist.data.web
 
 import java.io.DataOutputStream
 import java.io.IOException
@@ -13,13 +13,13 @@ import javax.net.ssl.HttpsURLConnection
 
 /**Класс для перевода текстовой задачи с русского на английский язык
  */
-object YandexTranslate {
+class YandexTranslate private constructor(): Translator {
     /**Переводит текст.
      * @transDirection - направление перевода в формате ru-en (c русского на английский)
      * @input - текст перевода
      */
     @Throws(IOException::class)
-    fun translate(transDirection: String, input: String?): String {
+    override fun translate(transDirection: String, input: String?): String {
         val urlStr = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=" +
                 "trnsl.1.1.20180420T121109Z.b002d3187929b557" +
                 ".b397db53cb8218077027dca1b19ad897ee594788"
@@ -42,6 +42,16 @@ object YandexTranslate {
                 return translate("en", input);
             } else */
         return translated
+    }
+
+    companion object {
+        var yandexTranslate: YandexTranslate? = null
+        fun getYandexTranslateObj(): YandexTranslate? {
+            if (yandexTranslate == null) {
+                yandexTranslate = YandexTranslate()
+            }
+            return yandexTranslate
+        }
     }
 
 }

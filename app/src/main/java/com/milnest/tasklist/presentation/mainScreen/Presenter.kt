@@ -1,11 +1,9 @@
 package com.milnest.tasklist.presentation.mainScreen
 
 import android.app.Activity
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
-import android.support.v7.app.AlertDialog
 import android.support.v7.view.ActionMode
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
@@ -13,15 +11,15 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import com.milnest.tasklist.R
-import com.milnest.tasklist.application.IntentData
-import com.milnest.tasklist.application.app
+import com.milnest.tasklist.IntentData
+import com.milnest.tasklist.app
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.other.utils.PhotoInteractor
 import com.milnest.tasklist.presentation.element.ItemsAdapter
 import com.milnest.tasklist.presentation.listScreen.ListTaskActivity
 import com.milnest.tasklist.presentation.textScreen.TextTaskActivity
-import com.milnest.tasklist.repository.DBRepository
+import com.milnest.tasklist.data.repository.DBRepository
 import java.io.File
 import java.lang.ref.WeakReference
 

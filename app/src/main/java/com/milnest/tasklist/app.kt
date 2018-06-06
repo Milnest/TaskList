@@ -1,4 +1,4 @@
-package com.milnest.tasklist.application
+package com.milnest.tasklist
 
 import android.annotation.SuppressLint
 import android.app.Application

@@ -3,8 +3,6 @@ package com.milnest.tasklist.other.utils
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
-import com.milnest.tasklist.application.app
-import com.squareup.picasso.Picasso
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*

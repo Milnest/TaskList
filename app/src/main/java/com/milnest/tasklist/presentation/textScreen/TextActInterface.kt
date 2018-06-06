@@ -1,7 +1,6 @@
 package com.milnest.tasklist.presentation.textScreen
 
 import android.content.Intent
-import com.milnest.tasklist.entities.TextActData
 
 interface TextActInterface {
     fun saveText(data : Intent)

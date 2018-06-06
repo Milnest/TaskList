@@ -10,11 +10,11 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.milnest.tasklist.R
 import com.milnest.tasklist.application.app
-import com.milnest.tasklist.entities.ImgTaskListItem
-import com.milnest.tasklist.entities.ListOfCheckboxesTaskListItem
-import com.milnest.tasklist.entities.TaskListItem
-import com.milnest.tasklist.entities.TextTaskListItem
+import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.other.utils.ChangeCbColor
+import com.milnest.tasklist.other.utils.JsonAdapter
+import com.squareup.picasso.Picasso
+import java.io.File
 import java.util.*
 
 /**
@@ -25,7 +25,7 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder>
-    private var mItems: List<TaskListItem>? = null
+    private var mItems: List<Task>? = null
 
     init {
         mViewHolderList = ArrayList()
@@ -37,21 +37,21 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
         when (viewType) {
         // инфлейтим нужную разметку в зависимости от того,
         // какой тип айтема нужен в данной позиции
-            TaskListItem.TYPE_ITEM_TEXT -> {
+            Task.TYPE_ITEM_TEXT -> {
                 v = LayoutInflater.from(parent.context).inflate(R.layout.text_task_list_item,
                         parent, false)
                 tempViewHolder = TextItemHolder(v)
                 val tempTextHolder: TextItemHolder = tempViewHolder as TextItemHolder;
                 return tempViewHolder
             }
-            TaskListItem.TYPE_ITEM_IMAGE -> {
+            Task.TYPE_ITEM_IMAGE -> {
                 v = LayoutInflater.from(parent.context).inflate(R.layout.img_task_list_item,
                         parent, false)
                 tempViewHolder = ImgItemHolder(v)
                 val tempImgHolder: ImgItemHolder = tempViewHolder as ImgItemHolder;
                 return tempViewHolder
             }
-            TaskListItem.TYPE_ITEM_LIST -> {
+            Task.TYPE_ITEM_LIST -> {
                 v = LayoutInflater.from(parent.context).inflate(
                         R.layout.list_of_checkboxes_task_list_item, parent, false)
                 tempViewHolder = CheckboxListItemHolder(v)
@@ -73,28 +73,24 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
         if (taskListItem.isSelected)
             holder.itemView.setBackgroundResource(R.color.black)
         else
-            holder.itemView.setBackgroundResource(R.color.colorAccent)
+            holder.itemView.setBackgroundResource(R.color.colorWhite)
         when (type) {
-            TaskListItem.TYPE_ITEM_TEXT -> {
-                val textTaskListItem = taskListItem as TextTaskListItem
+            Task.TYPE_ITEM_TEXT -> {
                 val textItemHolder = holder as TextItemHolder
-                textItemHolder.mName.text = textTaskListItem.name
-                textItemHolder.mText.text = textTaskListItem.text
+                textItemHolder.mName.text = taskListItem.title
+                textItemHolder.mText.text = taskListItem.data
             }
-            TaskListItem.TYPE_ITEM_IMAGE -> {
-                val imgTaskListItem = taskListItem as ImgTaskListItem
+            Task.TYPE_ITEM_IMAGE -> {
                 val imgItemHolder = holder as ImgItemHolder
-                imgItemHolder.mImgName.text = imgTaskListItem.name
-                imgItemHolder.mImage.setImageBitmap(imgTaskListItem.image)
+                imgItemHolder.mImgName.text = taskListItem.title
+                Picasso.get().load(File(taskListItem.data)).resize(250, 250).into(imgItemHolder.mImage)
             }
-            TaskListItem.TYPE_ITEM_LIST -> {
-                val listOfCbTaskListItem = taskListItem as ListOfCheckboxesTaskListItem
+            Task.TYPE_ITEM_LIST -> {
                 val cbListItemHolder = holder as CheckboxListItemHolder
                 val layout = cbListItemHolder.cbListLayout/*cbListItemHolder.itemView.findViewById<View>(R.id.layout_to_add) as LinearLayout*/
-                //Очистить view holder.
                 layout.removeAllViews()
-                //Заполнить ViewHolder новыми элементами.
-                for (item in listOfCbTaskListItem.cbList!!) {
+                val listOfCb = JsonAdapter.fromJson(taskListItem.data)
+                for (item in listOfCb) {
                     val cb = CheckBox(layout.context).apply {
                         setOnTouchListener { _, _ -> true }
                     }
@@ -164,11 +160,11 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
             item.isSelected = false
         }
         for (viewHolder in mViewHolderList) {
-            viewHolder.itemView.setBackgroundResource(R.color.colorAccent)
+            viewHolder.itemView.setBackgroundResource(R.color.colorWhite)
         }
     }
 
-    fun setData(data : List<TaskListItem>){
+    fun setData(data : List<Task>){
         mItems = data
         notifyDataSetChanged()
     }

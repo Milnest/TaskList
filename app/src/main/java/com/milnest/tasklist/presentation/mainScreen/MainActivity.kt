@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     override fun showDialog() {
         if (!dialog.isShowing) {
             dialog.show()
+            //presenter.setUpDialogStyle(dialog)
         }
     }
 

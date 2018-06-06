@@ -1,4 +1,4 @@
-package com.milnest.tasklist.interactor
+package com.milnest.tasklist.repository
 
 import java.io.DataOutputStream
 import java.io.IOException

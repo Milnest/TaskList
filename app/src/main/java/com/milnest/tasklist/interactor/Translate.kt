@@ -4,6 +4,7 @@ import android.os.AsyncTask
 import com.milnest.tasklist.entities.TextActData
 import com.milnest.tasklist.entities.observer.Observable
 import com.milnest.tasklist.entities.observer.Observer
+import com.milnest.tasklist.repository.YandexTranslate
 import java.io.IOException
 
 class Translate private constructor(): Observable, AsyncTask<TextActData, Void, TextActData?>(){

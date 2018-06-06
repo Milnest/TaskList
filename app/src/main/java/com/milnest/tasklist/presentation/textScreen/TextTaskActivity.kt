@@ -44,12 +44,8 @@ class TextTaskActivity : AppCompatActivity(), TextActInterface {
         when (item.itemId) {
             R.id.action_task_text_save -> {
                 presenter.saveClicked(textActData)
-                //saveText()
-                presenter.closeView()
             }
             R.id.action_task_text_share -> {
-                //testitb
-                //presenter.saveButtonClicked()
                 presenter.shareClicked(textActData)
             }
             R.id.action_task_text_translate -> presenter.translationClicked(textActData)

@@ -4,8 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import com.milnest.tasklist.R
 import com.milnest.tasklist.application.IntentData
+import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.entities.TextActData
-import com.milnest.tasklist.entities.TextTaskListItem
 import com.milnest.tasklist.entities.observer.Observer
 import com.milnest.tasklist.interactor.Translate
 import com.milnest.tasklist.repository.DBRepository
@@ -19,18 +19,18 @@ class TextActivityPresenter : Observer {
     fun setStartText(extras: Bundle?) {
         if (extras != null){
             textId = extras.getInt(IntentData.ID)
-            val textTask = DBRepository.getTaskById(textId!!) as TextTaskListItem
-            view.get()?.setText(textTask.name, textTask.text)
+            val textTask = DBRepository.getTaskById(textId!!) as Task
+            view.get()?.setText(textTask.title, textTask.data)
         }
     }
 
     fun saveClicked(text: TextActData) {
         savedIntent.putExtra(IntentData.NAME, text.taskTitle)
         savedIntent.putExtra(IntentData.TEXT, text.taskText)
-
         if (textId != null) {
             savedIntent.putExtra(IntentData.ID, textId!!)
         }
+        closeView()
     }
 
     fun shareClicked(text: TextActData) {

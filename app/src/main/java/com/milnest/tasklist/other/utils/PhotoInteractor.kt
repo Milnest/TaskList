@@ -33,7 +33,7 @@ object PhotoInteractor {
     fun saveImageToFile(img : Bitmap) : File{
         val file = createFilePath()
         val fOut = FileOutputStream(file)
-        img.compress(Bitmap.CompressFormat.JPEG, 85, fOut) // 85% сжатие
+        img.compress(Bitmap.CompressFormat.JPEG, 100, fOut)
         fOut.flush()
         fOut.close()
         return file

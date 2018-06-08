@@ -1,7 +1,5 @@
 package com.milnest.tasklist.presentation.listScreen
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Pair
@@ -72,9 +70,4 @@ class ListTaskActivity : AppCompatActivity(), ListActInterface {
             addCb(item.isCbState, item.cbText)
         }
     }
-
-    override fun recieveList(data: Intent) {
-        setResult(Activity.RESULT_OK, data)
-    }
-
 }

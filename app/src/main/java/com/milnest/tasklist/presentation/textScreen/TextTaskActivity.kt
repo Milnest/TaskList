@@ -11,8 +11,6 @@ import com.milnest.tasklist.R
 import kotlinx.android.synthetic.main.activity_text_task.*
 import kotlinx.android.synthetic.main.toolbar.*
 
-/**Класс текстовой задачи
- */
 class TextTaskActivity : AppCompatActivity(), TextActInterface {
     private lateinit var presenter : TextActivityPresenter
 

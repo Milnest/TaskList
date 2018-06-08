@@ -24,7 +24,7 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 
-class Presenter() {
+class Presenter {
     val adapter = ItemsAdapter(onItemClickListener)
     lateinit var photoFile: File
     var curPosDelete = -1
@@ -43,76 +43,34 @@ class Presenter() {
     }
 
     fun processViewRes(result: ResultOfActivity?) {
-        when (result!!.requestCode) {
-            IntentData.TEXT_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
-                if (result.data!!.extras != null) {
-                    val name = result.data.getStringExtra(IntentData.NAME)
-                    val text = result.data.getStringExtra(IntentData.TEXT)
-                    val get_id = result.data.getIntExtra(IntentData.ID, -1)
-                    if (get_id != -1) {
-                        DBRepository.updateTask(get_id, name, Task.TYPE_ITEM_TEXT, text)
+        if (result!!.resultCode == Activity.RESULT_OK) {
+            when (result.requestCode) {
+                IntentData.CAMERA_RESULT -> {
+                    try {
+                        DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
                         adapter.setData(DBRepository.getAllTasks())
-                    } else {
-                        DBRepository.addTask(name, Task.TYPE_ITEM_TEXT, text)
-                        adapter.setData(DBRepository.getAllTasks())
+                    } catch (ex: Exception) {
+                        notifToActivity(R.string.no_external)
                     }
                 }
-            } else {
-                notifToActivity(R.string.save_canceled)
-            }
-            IntentData.CAMERA_RESULT -> {
-                try {
-                    DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
-                    adapter.setData(DBRepository.getAllTasks())
-                } catch (ex: Exception) {
-                    notifToActivity(R.string.no_external)
-                }
-            }
 
-            IntentData.GALLERY_RESULT -> {
-                try {
-                    val img = MediaStore.Images.Media.getBitmap(app.context.contentResolver,
-                            result.data!!.data)
-                    //Костыль
-                    val file = PhotoInteractor.saveImageToFile(img)
-                    MediaStore.Images.Media.insertImage(app.context.contentResolver,
-                            file.canonicalPath, file.name, file.name)
-                    DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, file.canonicalPath)
-                    adapter.setData(DBRepository.getAllTasks())
-                } catch (ex: Exception) {
-                    notifToActivity(R.string.no_external)
-                }
-            }
-            IntentData.LIST_RESULT -> if (result.resultCode == Activity.RESULT_OK) {
-                val extras = result.data!!.extras
-                if (extras != null) {
-                    val text = result.data.getStringExtra(IntentData.LIST)
-                    val get_id = result.data.getIntExtra(IntentData.ID, -1)
-                    if (get_id != -1) {
-                        DBRepository.updateTask(get_id, "",
-                                Task.TYPE_ITEM_LIST, text)
+                IntentData.GALLERY_RESULT -> {
+                    try {
+                        val img = MediaStore.Images.Media.getBitmap(app.context.contentResolver,
+                                result.data!!.data)
+                        //Костыль
+                        val file = PhotoInteractor.saveImageToFile(img)
+                        MediaStore.Images.Media.insertImage(app.context.contentResolver,
+                                file.canonicalPath, file.name, file.name)
+                        DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, file.canonicalPath)
                         adapter.setData(DBRepository.getAllTasks())
-                    } else {
-                        DBRepository.addTask("", Task.TYPE_ITEM_LIST, text)
-                        adapter.setData(DBRepository.getAllTasks())
+                    } catch (ex: Exception) {
+                        notifToActivity(R.string.no_external)
                     }
-
-
-                    /*val taskCbList: Task
-                    if (listId != null) {
-                        taskCbList = Task(
-                                listId!!, "", Task.TYPE_ITEM_LIST,
-                                jsonStringOfList)
-                        data.putExtra(IntentData.ID, listId!!)
-                    } else {
-                        taskCbList = Task(
-                                0, "", Task.TYPE_ITEM_LIST,
-                                jsonStringOfList)
-                    }*/
-
                 }
             }
         }
+        else notifToActivity(R.string.save_canceled)
     }
 
     fun photoClicked() {
@@ -170,11 +128,11 @@ class Presenter() {
                 when (type) {
                     Task.TYPE_ITEM_TEXT -> {
                         view.get()?.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
-                                id, IntentData.TEXT_RESULT/*, arrayOf((item as TextTaskListItem).name, item.text)*/)
+                                id, IntentData.TEXT_RESULT)
                     }
                     Task.TYPE_ITEM_LIST -> {
                         view.get()?.startTaskActivity(ListTaskActivity::class.java,
-                                id, IntentData.LIST_RESULT/*, taskRepo.getTaskById(id)*/)
+                                id, IntentData.LIST_RESULT)
                     }
                 }
             }

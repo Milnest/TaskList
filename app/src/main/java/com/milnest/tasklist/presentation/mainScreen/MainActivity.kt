@@ -54,21 +54,20 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         add_task_photo.setOnClickListener(presenter.addImgTask())
     }
 
+    fun openGallery() {
+        val photoPickerIntent = Intent(Intent.ACTION_PICK)
+        photoPickerIntent.type = "image/*"
+        createTaskActivity(photoPickerIntent, IntentData.GALLERY_RESULT)
+    }
+
     override fun showDialog() {
         if (!dialog.isShowing) {
             dialog.show()
-            //presenter.setUpDialogStyle(dialog)
         }
     }
 
     override fun finishActionMode() {
         mActionMode!!.finish()
-    }
-
-    fun openGallery() {
-        val photoPickerIntent = Intent(Intent.ACTION_PICK)
-        photoPickerIntent.type = "image/*"
-        createTaskActivity(photoPickerIntent, IntentData.GALLERY_RESULT)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -122,7 +121,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
         val intentChange = Intent(this, activityClass)
-        intentChange.putExtra(/*"id"*/IntentData.ID, itemId)
+        intentChange.putExtra(IntentData.ID, itemId)
         startActivityForResult(intentChange, actResType)
     }
 
@@ -132,6 +131,6 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun createTaskActivity(taskType: Int, taskClass: Class<*>) {
         val textIntent = Intent(this, taskClass)
-        startActivityForResult(textIntent, taskType)
+        startActivity(textIntent)
     }
 }

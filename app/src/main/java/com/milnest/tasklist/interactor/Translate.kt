@@ -7,7 +7,7 @@ import com.milnest.tasklist.other.utils.observer.Observer
 import com.milnest.tasklist.data.web.Translator
 import com.milnest.tasklist.data.web.YandexTranslate
 
-class Translate private constructor(): Observable, AsyncTask<Task, Void, Task>(){
+class Translate private constructor(): Observable, AsyncTask<String, Void, Array<out String>>(){
     var translator: Translator = YandexTranslate.getYandexTranslateObj()!! //TODO:?
 
     var observer : Observer? = null
@@ -19,19 +19,25 @@ class Translate private constructor(): Observable, AsyncTask<Task, Void, Task>()
         observer = null
     }
 
-    override fun notifyObservers(translatedText: Task) {
-        observer!!.update(translatedText)
+    override fun notifyObservers(title : String, text: String) {
+        observer!!.update(title, text)
     }
 
-    override fun doInBackground(vararg translatedText: Task): Task  {
-        if (translatedText[0].title != "") translatedText[0].title = translator.translate("ru-en", translatedText[0].title)
-        if (translatedText[0].data != "")translatedText[0].data = translator.translate("ru-en", translatedText[0].data)
-        return translatedText[0]
+    override fun doInBackground(vararg toTranslate: String): Array<out String>  {
+        var translatedTitle = toTranslate[0] //TODO: 1 obrabotka
+        var translatedText  = toTranslate[1]
+        try {
+            if (toTranslate[0] != "") translatedTitle = translator.translate("ru-en", toTranslate[0])
+            if (toTranslate[1] != "") translatedText = translator.translate("ru-en", toTranslate[1])
+            return arrayOf(translatedTitle, translatedText)
+        } catch (ex: Exception) {
+            return toTranslate
         }
+    }
 
-    override fun onPostExecute(data: Task) {
+    override fun onPostExecute(data: Array<out String>) {
         super.onPostExecute(data)
-        notifyObservers(data)
+        notifyObservers(data[0], data[1])
     }
 
     companion object {

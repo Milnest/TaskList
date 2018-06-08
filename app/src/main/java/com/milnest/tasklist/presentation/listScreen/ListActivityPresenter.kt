@@ -1,21 +1,22 @@
 package com.milnest.tasklist.presentation.listScreen
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
 import com.milnest.tasklist.IntentData
-import com.milnest.tasklist.entities.CheckboxTaskListItem
-import com.milnest.tasklist.other.utils.JsonAdapter
 import com.milnest.tasklist.data.repository.DBRepository
+import com.milnest.tasklist.entities.CheckboxTaskListItem
+import com.milnest.tasklist.entities.Task
+import com.milnest.tasklist.other.utils.JsonAdapter
 import java.lang.ref.WeakReference
-import java.util.ArrayList
+import java.util.*
 
 class ListActivityPresenter {
 
     private var listId : Int? = null
     private lateinit var view: WeakReference<ListActInterface>
+    private var task = Task(Task.TYPE_ITEM_LIST)
 
     fun attachView(view: ListActInterface) {
         this.view = WeakReference(view)
@@ -26,29 +27,20 @@ class ListActivityPresenter {
     }
 
     private fun saveList() {
-        val data = Intent()
-        //val taskCbList: ListOfCheckboxesTaskListItem
         val itemList = ArrayList<CheckboxTaskListItem>()
         for (cb in view.get()?.mCheckBoxList!!) {
                 itemList.add(CheckboxTaskListItem((cb.second as EditText).text.toString(),
                         (cb.first as CheckBox).isChecked))
         }
-        val jsonStringOfList = JsonAdapter.toJson(itemList)
-
-        if (listId != null) data.putExtra(IntentData.ID, listId!!)
-
-        //id просто игнорируется при добавлении нового активити
-        data.putExtra(IntentData.LIST, jsonStringOfList)
-        view.get()?.recieveList(data)
+        task.data= JsonAdapter.toJson(itemList)
+        DBRepository.saveTask(task)
     }
 
     fun setStartList(extras : Bundle?){
         if (extras != null) {
             listId = extras.getInt(IntentData.ID)
-            //val cbList = DBRepository.getTaskById(listId!!)!!.data
-            val cbList = JsonAdapter.fromJson(DBRepository.getTaskById(listId!!)!!.data)
-
-            view.get()?.fillStart(cbList as List<CheckboxTaskListItem>)
+            task = DBRepository.getTaskById(listId!!)!!
+            view.get()?.fillStart(JsonAdapter.fromJson(task.data))
         } else {
             view.get()?.addCb(false, "")
         }

@@ -1,12 +1,7 @@
 package com.milnest.tasklist
 
-object IntentData {
-    val NAME = "NAME"
-    val TEXT = "TEXT"
-    val ID = "ID"
-    val LIST = "LIST"
-    val TEXT_RESULT = 1
-    val CAMERA_RESULT = 2
-    val GALLERY_RESULT = 3
-    val LIST_RESULT = 4
-}
+const val ID = "ID"
+const val TEXT_RESULT = 1
+const val CAMERA_RESULT = 2
+const val GALLERY_RESULT = 3
+const val LIST_RESULT = 4

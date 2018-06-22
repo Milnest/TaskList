@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.mainScreen
+package com.milnest.tasklist.presentation.main
 
 import android.app.Activity
 import android.content.Intent
@@ -10,27 +10,24 @@ import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.milnest.tasklist.R
-import com.milnest.tasklist.IntentData
-import com.milnest.tasklist.app
+import com.milnest.tasklist.*
 import com.milnest.tasklist.entities.ResultOfActivity
 import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.other.utils.PhotoInteractor
-import com.milnest.tasklist.presentation.element.ItemsAdapter
-import com.milnest.tasklist.presentation.listScreen.ListTaskActivity
-import com.milnest.tasklist.presentation.textScreen.TextTaskActivity
+import com.milnest.tasklist.presentation.list.ListTaskActivity
+import com.milnest.tasklist.presentation.text.TextTaskTaskActivity
 import com.milnest.tasklist.data.repository.DBRepository
 import java.io.File
 import java.lang.ref.WeakReference
 
 
-class Presenter {
+class MainPresenter {
     val adapter = ItemsAdapter(onItemClickListener)
-    lateinit var photoFile: File
+    private lateinit var photoFile: File
     var curPosDelete = -1
-    lateinit var view: WeakReference<PresenterInterface>
+    lateinit var view: WeakReference<MainView>
 
-    fun attachView(view: PresenterInterface) {
+    fun attachView(view: MainView) {
         this.view = WeakReference(view)
     }
 
@@ -38,14 +35,14 @@ class Presenter {
         itemsView.adapter = adapter
     }
 
-    fun notifToActivity(toShow: Int) {
+    private fun notifToActivity(toShow: Int) {
         view.get()?.showNotif(toShow);
     }
 
     fun processViewRes(result: ResultOfActivity?) {
         if (result!!.resultCode == Activity.RESULT_OK) {
             when (result.requestCode) {
-                IntentData.CAMERA_RESULT -> {
+                CAMERA_RESULT -> {
                     try {
                         DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, photoFile.canonicalPath)
                         adapter.setData(DBRepository.getAllTasks())
@@ -54,13 +51,13 @@ class Presenter {
                     }
                 }
 
-                IntentData.GALLERY_RESULT -> {
+                GALLERY_RESULT -> {
                     try {
-                        val img = MediaStore.Images.Media.getBitmap(app.context.contentResolver,
+                        val img = MediaStore.Images.Media.getBitmap(App.context.contentResolver,
                                 result.data!!.data)
                         //Костыль
                         val file = PhotoInteractor.saveImageToFile(img)
-                        MediaStore.Images.Media.insertImage(app.context.contentResolver,
+                        MediaStore.Images.Media.insertImage(App.context.contentResolver,
                                 file.canonicalPath, file.name, file.name)
                         DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, file.canonicalPath)
                         adapter.setData(DBRepository.getAllTasks())
@@ -91,18 +88,18 @@ class Presenter {
     }
 
     fun addTextTask() = View.OnClickListener {
-        view.get()?.createTaskActivity(IntentData.TEXT_RESULT, TextTaskActivity::class.java)
+        view.get()?.createTaskActivity(TEXT_RESULT, TextTaskTaskActivity::class.java)
     }
 
     fun addListTask() = View.OnClickListener {
-        view.get()?.createTaskActivity(IntentData.LIST_RESULT, ListTaskActivity::class.java)
+        view.get()?.createTaskActivity(LIST_RESULT, ListTaskActivity::class.java)
     }
 
     fun addImgTask() = View.OnClickListener {
         view.get()?.showDialog()
     }
 
-    fun searchChangeFocus() = View.OnFocusChangeListener { view: View, b: Boolean ->
+    fun searchChangeFocus() = View.OnFocusChangeListener { _: View, _: Boolean ->
         adapter.setData(DBRepository.getAllTasks())
     }
 
@@ -127,12 +124,12 @@ class Presenter {
 
                 when (type) {
                     Task.TYPE_ITEM_TEXT -> {
-                        view.get()?.startTaskActivity(TextTaskActivity::class.java as? Class<*>,
-                                id, IntentData.TEXT_RESULT)
+                        view.get()?.startTaskActivity(TextTaskTaskActivity::class.java as? Class<*>,
+                                id, TEXT_RESULT)
                     }
                     Task.TYPE_ITEM_LIST -> {
                         view.get()?.startTaskActivity(ListTaskActivity::class.java,
-                                id, IntentData.LIST_RESULT)
+                                id, LIST_RESULT)
                     }
                 }
             }
@@ -141,12 +138,10 @@ class Presenter {
                 if (view.get()?.mActionMode == null) {
                     curPosDelete = position
                     view.get()?.showActionBar(R.string.action_mode)
-                    //Добавление выделения при выборе
                     adapter.addSelection(position)
                 } else {
                     curPosDelete = -1
                     view.get()?.closeActionBar()
-                    //Сброс выделения
                     adapter.removeSelection()
                 }
                 return true

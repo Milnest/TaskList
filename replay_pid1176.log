@@ -895,11 +895,11 @@ instanceKlass java/util/zip/ZipOutputStream$XEntry
 instanceKlass com/android/build/gradle/tasks/PreColdSwapTask$1
 instanceKlass java/util/WeakHashMap$HashIterator
 instanceKlass com/android/build/gradle/internal/incremental/IncrementalSupportVisitor$$Lambda$445
-instanceKlass android/view/View
-instanceKlass android/view/accessibility/AccessibilityEventSource
-instanceKlass android/view/KeyEvent$Callback
+instanceKlass android/taskView/View
+instanceKlass android/taskView/accessibility/AccessibilityEventSource
+instanceKlass android/taskView/KeyEvent$Callback
 instanceKlass android/graphics/drawable/Drawable$Callback
-instanceKlass android/view/ViewTreeObserver$OnPreDrawListener
+instanceKlass android/taskView/ViewTreeObserver$OnPreDrawListener
 instanceKlass com/milnest/tasklist/TaskListItem
 instanceKlass com/android/build/gradle/internal/incremental/IncrementalSupportVisitor$$Lambda$444
 instanceKlass com/android/build/gradle/internal/incremental/IncrementalSupportVisitor$$Lambda$443

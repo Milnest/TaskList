@@ -11,16 +11,10 @@ import javax.net.ssl.HttpsURLConnection
  * Created by t-yar on 20.04.2018.
  */
 
-/**Класс для перевода текстовой задачи с русского на английский язык
- */
 class YandexTranslate private constructor(): Translator {
-    /**Переводит текст.
-     * @transDirection - направление перевода в формате ru-en (c русского на английский)
-     * @input - текст перевода
-     */
     @Throws(IOException::class)
     override fun translate(transDirection: String, input: String?): String {
-        val urlStr = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=" +
+        val urlStr = "https://translateInteractor.yandex.net/api/v1.5/tr.json/translateInteractor?key=" +
                 "trnsl.1.1.20180420T121109Z.b002d3187929b557" +
                 ".b397db53cb8218077027dca1b19ad897ee594788"
         val urlObj = URL(urlStr)
@@ -39,7 +33,7 @@ class YandexTranslate private constructor(): Translator {
         /*i++;
             if (translated.equals(input) && i < 2) {
                 // if return equal of entered text - we need change direction of translation
-                return translate("en", input);
+                return translateInteractor("en", input);
             } else */
         return translated
     }

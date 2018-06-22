@@ -5,7 +5,7 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.milnest.tasklist.app
+import com.milnest.tasklist.App
 import com.milnest.tasklist.data.db.TaskDatabaseHelper
 import com.milnest.tasklist.entities.Task
 
@@ -14,7 +14,7 @@ import com.milnest.tasklist.entities.Task
  */
 
 object DBRepository {
-    private var db: SQLiteDatabase = TaskDatabaseHelper(app.context).writableDatabase
+    private var db: SQLiteDatabase = TaskDatabaseHelper(App.context).writableDatabase
 
     fun getAllTasks(): MutableList<Task> {
         val cursor = db.query(TaskDatabaseHelper.TABLE, null,

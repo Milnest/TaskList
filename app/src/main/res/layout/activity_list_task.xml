@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".presentation.listScreen.ListTaskActivity">
+    tools:context=".presentation.list.ListTaskActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar_task"
@@ -18,65 +17,37 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.widget.NestedScrollView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:context=".presentation.listScreen.ListTaskActivity"
+        tools:context=".presentation.list.ListTaskActivity"
         tools:showIn="@layout/activity_list_task">
 
-        <android.support.constraint.ConstraintLayout
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+        <android.support.constraint.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/add_list_task_layout"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_cb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-                <!--<CheckBox
-                android:id="@+id/cb_start"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:hint="text"
-                android:onClick="onClick"/>-->
-
-                <!--<TextView
-                android:id="@+id/new_cb"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:onClick="onClick"
-                android:text="@string/new_cb"
-                android:textSize="20sp"
-
-                />-->
-
-            </LinearLayout>
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
             <TextView
                 android:id="@+id/new_cb"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
 
-                android:layout_marginEnd="8dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
-
                 android:text="@string/new_cb"
                 android:textSize="20sp"
-                app:layout_constraintEnd_toEndOf="@id/add_list_task_layout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/add_list_task_layout" />
+                app:layout_constraintTop_toBottomOf="@+id/recycler_view_cb" />
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>

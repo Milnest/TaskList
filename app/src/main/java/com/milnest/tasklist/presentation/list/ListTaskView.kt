@@ -1,10 +1,9 @@
-package com.milnest.tasklist.presentation.listScreen
+package com.milnest.tasklist.presentation.list
 
-import android.util.Pair
 import com.milnest.tasklist.entities.CheckboxTaskListItem
 
-interface ListActInterface {
-    var mCheckBoxList: MutableList<Pair<*, *>>?
+interface ListTaskView {
     fun fillStart(cbList: List<CheckboxTaskListItem>)
     fun addCb(cbState: Boolean, cbText:String?)
+    fun finish()
 }

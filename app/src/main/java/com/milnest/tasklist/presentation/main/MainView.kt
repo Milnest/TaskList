@@ -1,10 +1,8 @@
-package com.milnest.tasklist.presentation.mainScreen
+package com.milnest.tasklist.presentation.main
 
 import android.content.Intent
-import android.widget.Button
-import com.milnest.tasklist.entities.ResultOfActivity
 
-interface PresenterInterface{
+interface MainView{
     var mActionMode : android.support.v7.view.ActionMode?
     fun showActionBar(title : Int)
     fun closeActionBar()

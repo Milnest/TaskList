@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.mainScreen
+package com.milnest.tasklist.presentation.main
 
 import android.app.SearchManager
 import android.content.Context
@@ -12,19 +12,18 @@ import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import com.milnest.tasklist.R
-import com.milnest.tasklist.IntentData
+import com.milnest.tasklist.*
 import com.milnest.tasklist.entities.ResultOfActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
 
 
-class MainActivity : AppCompatActivity(), PresenterInterface {
+class MainActivity : AppCompatActivity(), MainView {
     override var mActionMode: android.support.v7.view.ActionMode? = null
     private val mGridManager = GridLayoutManager(this, 2)
     private val mLinearLayoutManager = LinearLayoutManager(this)
     private lateinit var searchView: SearchView
-    private val presenter = Presenter()
+    private val presenter = MainPresenter()
     private lateinit var dialog : AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     fun openGallery() {
         val photoPickerIntent = Intent(Intent.ACTION_PICK)
         photoPickerIntent.type = "image/*"
-        createTaskActivity(photoPickerIntent, IntentData.GALLERY_RESULT)
+        createTaskActivity(photoPickerIntent, GALLERY_RESULT)
     }
 
     override fun showDialog() {
@@ -94,7 +93,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
     }
 
     override fun startPhotoActivity(cameraIntent: Intent) {
-        startActivityForResult(cameraIntent, IntentData.CAMERA_RESULT)
+        startActivityForResult(cameraIntent, CAMERA_RESULT)
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -121,7 +120,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
         val intentChange = Intent(this, activityClass)
-        intentChange.putExtra(IntentData.ID, itemId)
+        intentChange.putExtra(ID, itemId)
         startActivityForResult(intentChange, actResType)
     }
 

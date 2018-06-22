@@ -11,7 +11,7 @@
         android:layout_height="0dp"
         android:layout_weight="0.9"
         android:fitsSystemWindows="true"
-        tools:context=".presentation.mainScreen.MainActivity">
+        tools:context=".presentation.main.MainActivity">
 
         <android.support.design.widget.AppBarLayout
             android:id="@+id/app_bar"

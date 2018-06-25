@@ -14,7 +14,7 @@ import javax.net.ssl.HttpsURLConnection
 class YandexTranslate private constructor(): Translator {
     @Throws(IOException::class)
     override fun translate(transDirection: String, input: String?): String {
-        val urlStr = "https://translateInteractor.yandex.net/api/v1.5/tr.json/translateInteractor?key=" +
+        val urlStr = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=" +
                 "trnsl.1.1.20180420T121109Z.b002d3187929b557" +
                 ".b397db53cb8218077027dca1b19ad897ee594788"
         val urlObj = URL(urlStr)

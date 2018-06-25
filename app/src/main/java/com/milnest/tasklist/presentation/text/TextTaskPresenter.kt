@@ -2,13 +2,22 @@ package com.milnest.tasklist.presentation.text
 
 import android.content.Intent
 import android.os.Bundle
+import com.google.gson.GsonBuilder
 import com.milnest.tasklist.ID
 import com.milnest.tasklist.R
 import com.milnest.tasklist.data.repository.DBRepository
+import com.milnest.tasklist.data.web.APIService
+import com.milnest.tasklist.data.web.TranslateData
 import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.interactor.TranslateInteractor
 import com.milnest.tasklist.other.utils.observer.Observer
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.ref.WeakReference
+import java.net.URLEncoder
 
 class TextTaskPresenter : Observer {
     private var task = Task(Task.TYPE_ITEM_TEXT)
@@ -42,7 +51,7 @@ class TextTaskPresenter : Observer {
     }
 
     fun translationClicked(title : String, text:String) {
-        //method(title, "ru-en")
+//        method(title, "ru-en")
         translateInteractor = TranslateInteractor()
         if (translateInteractor?.observer == null) {
             translateInteractor?.registerObserver(this)
@@ -57,7 +66,7 @@ class TextTaskPresenter : Observer {
                 .build()
 
         val service = retrofit.create<APIService>(APIService::class.java)
-        val operation = service.translateInteractor("trnsl.1.1.20180420T121109Z.b002d3187929b557" +
+        val operation = service.translate("trnsl.1.1.20180420T121109Z.b002d3187929b557" +
                 ".b397db53cb8218077027dca1b19ad897ee594788", URLEncoder.encode(input, "UTF-8"), transDirection)
         operation.enqueue(object : Callback<TranslateData> {
             override fun onFailure(call: Call<TranslateData>?, t: Throwable?) {
@@ -69,8 +78,7 @@ class TextTaskPresenter : Observer {
             }
 
         })
-    }
-*/
+    }*/
     override fun update(title: String, text: String) {
         if (task.title == title && task.data == text) {
             taskView.get()?.showToast(R.string.translate_fail)

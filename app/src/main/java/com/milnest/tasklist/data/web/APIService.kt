@@ -6,6 +6,6 @@ import retrofit2.http.Query
 
 
 interface APIService {
-    @POST("translateInteractor")
+    @POST("translate")
     fun translate(@Query("key") translate: String, @Query("text") text: String, @Query("&lang") lang : String ): Call<TranslateData>
 }

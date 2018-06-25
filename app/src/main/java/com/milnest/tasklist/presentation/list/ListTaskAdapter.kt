@@ -1,6 +1,7 @@
 package com.milnest.tasklist.presentation.list
 
 import android.support.v7.widget.RecyclerView
+import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
@@ -8,34 +9,84 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
-import com.milnest.tasklist.App
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.CheckboxTaskListItem
 
-class ListTaskAdapter(private val cbClickListener: CbClickListener):
+class ListTaskAdapter(val cbClickListener: CbClickListener):
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    //private val itemsList: MutableList<CheckboxTaskListItem> = ArrayList()
-//    private val cbList: MutableList<Pair<*, *>> = ArrayList()
-    private val cbHolderList: MutableList<CbHolder> = ArrayList()
-    private val cbList: MutableList<CheckBox> = ArrayList()
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val v: View = LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
-                parent, false)
-        val tempHolder = CbHolder(v)
-        cbHolderList.add(tempHolder)
-        return tempHolder
+
+    val CHECKBOX_ITEM_TYPE = 0
+    val ADD_ITEM_TYPE = 1
+    private var onBind : Boolean = true
+
+    private lateinit var itemsList: MutableList<*/*CheckboxTaskListItem*/>
+    private val createCb = "Новый пункт"
+    private var curRecyclerView:RecyclerView? = null
+
+    fun setData(data : MutableList<CheckboxTaskListItem>){
+        itemsList = data
+        /*onCreateViewHolder(curRecyclerView as ViewGroup, 1)*/
+        //onCreateViewHolder(,1)
     }
 
-    fun setData(data : List<CheckboxTaskListItem>){
-        for (item in data){
-            val cb = CheckBox(App.context)
-            cb.isChecked = item.isCbState
-            val cbText  = EditText(App.context)
-            cbText.setText(item.cbText)
-//            cbList.add(Pair(cb, cbText))
-            cbList.add(cb)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
+
+        return when (viewType){
+            CHECKBOX_ITEM_TYPE -> {
+                CbHolder(LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
+                        parent, false))
+            }
+            ADD_ITEM_TYPE -> {
+                AddHolder(LayoutInflater.from(parent.context).inflate(R.layout.add_new_cb,
+                        parent, false))
+            }
+            else -> null
         }
-        notifyDataSetChanged()
+
+        /*val v: View = LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
+                parent, false)
+        return CbHolder(v)*/
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+        onBind = true
+        if (holder is CbHolder) {
+            val cbItem = itemsList[position]
+            val cbHolder = holder
+            cbHolder.state.isChecked = /*cbItem.isCbState*/ (cbItem as CheckboxTaskListItem).isCbState
+            cbHolder.text.setText(cbItem.cbText)
+        }
+        else{
+           val newHolder = holder as AddHolder
+           newHolder.newCb.text = createCb
+        }
+        onBind = false
+    }
+
+    override fun getItemCount(): Int {
+        return itemsList.size + 1
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if(position == itemsList.size) ADD_ITEM_TYPE else CHECKBOX_ITEM_TYPE
+    }
+
+    fun setRecycler(recycler_view_cb: RecyclerView) {
+        curRecyclerView = recycler_view_cb
+    }
+
+    interface CbClickListener {
+        fun onRemoveItem(position: Int)
+        fun onAddItem()
+        fun onStateChanged(layoutPosition: Int, state: Boolean)
+        fun onTextChanged(layoutPosition: Int, text: String)
+    }
+
+    inner class AddHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+        internal var newCb: TextView = itemView.findViewById(R.id.new_cb)
+        init {
+            newCb.setOnClickListener { cbClickListener.onAddItem() }
+        }
     }
 
     inner class CbHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
@@ -44,72 +95,22 @@ class ListTaskAdapter(private val cbClickListener: CbClickListener):
         internal var deleteTextView: TextView = itemView.findViewById(R.id.delTextView)
         init {
             deleteTextView.text = "X"
-            deleteTextView.setOnClickListener {cbClickListener.onItemClick(layoutPosition)}
-            state.setOnClickListener { cbClickListener.onStateChanged(layoutPosition, state.isChecked)}
-//            text.addTextChangedListener( cbClickListener.onTextChanged(layoutPosition, text.text.toString()) )
+            deleteTextView.setOnClickListener {cbClickListener.onRemoveItem(layoutPosition)}
+            state.setOnCheckedChangeListener { _, isChecked -> if(!onBind) cbClickListener.onStateChanged(layoutPosition, isChecked)}
+            text.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    if (!onBind) cbClickListener.onTextChanged(layoutPosition, text.text.toString())
+                }
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+                }
+            })
         }
-        //TODO: СДЕЛАТЬ ЛИСТЕНЕР КЛИКА
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-        //val cbItem = itemsList[position]
-        val cbItem = cbList[position]
-        val cbHolder = holder as CbHolder
-        //cbHolderList.add(cbHolder)
-        cbHolder.state = cbItem
-//        cbHolder.state = cbItem.first as CheckBox
-//        cbHolder.text =  cbItem.second as EditText
-//        cbList.add(Pair(cbHolder.state, cbHolder.text))
-    }
-
-    override fun getItemCount(): Int {
-        return cbList.size ?: 0 //TODO: meh
-    }
-
-    fun addCb(/*item : CheckboxTaskListItem*/cb: CheckBox){
-       // itemsList.add(item)
-        /*val cb = CheckBox(App.context)
-        cb.isChecked = item.isCbState*/
-        /*val cbText  = EditText(App.context)
-        cbText.setText(item.cbText*//*"1000"*//*) //TODO: значение не приходит, с 1000 работает*/
-        //cbList.add(Pair(cb, cbText))
-        cbList.add(cb)
-        notifyDataSetChanged()
-    }
-
-    fun deleteCb(position: Int){
-        cbList.removeAt(position)
-        notifyDataSetChanged()
-    }
-
-    fun getList(): MutableList<CheckboxTaskListItem> {
-        val resultList: MutableList<CheckboxTaskListItem> = ArrayList()
-        for (item in cbList){
-            resultList.add(CheckboxTaskListItem("10", item.isChecked))
-        }
-        /*for (item in cbHolderList){
-            resultList.add(CheckboxTaskListItem(item.text.text.toString(), item.state.isChecked))
-        }*/
-        return resultList
-    }
-
-    fun changeState(layoutPosition: Int, state: Boolean) {
-        val cb = CheckBox(App.context)
-        cb.isChecked = state
-        cbList.set(layoutPosition, cb)
-    }
-
-    /*fun changeState(layoutPosition: Int, state: Boolean) {
-        itemsList[layoutPosition].isCbState = state
-    }
-
-    fun changeText(layoutPosition: Int, text: String) {
-        itemsList[layoutPosition].cbText = text
-    }*/
-
-    interface CbClickListener {
-        fun onItemClick(position: Int)
-        fun onStateChanged(layoutPosition: Int, state: Boolean)
-//        fun onTextChanged(layoutPosition: Int, text: String) : TextWatcher
-    }
 }

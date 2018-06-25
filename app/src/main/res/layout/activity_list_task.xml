@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/new_cb"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -47,7 +47,7 @@
                 android:gravity="center"
                 android:text="@string/new_cb"
                 android:textSize="20sp"
-                app:layout_constraintTop_toBottomOf="@+id/recycler_view_cb" />
+                app:layout_constraintTop_toBottomOf="@+id/recycler_view_cb" />-->
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>

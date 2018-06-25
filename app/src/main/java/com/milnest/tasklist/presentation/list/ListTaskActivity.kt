@@ -15,8 +15,6 @@ import kotlinx.android.synthetic.main.toolbar.*
 import java.util.*
 
 class ListTaskActivity : AppCompatActivity(), ListTaskView {
-    //Пара значений, чекбокс и его редактируемый текст
- //   var checkBoxList: MutableList<Pair<*, *>>? = null //TODO: превратить это в листвью
     private lateinit var taskPresenter: ListTaskPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,18 +25,17 @@ class ListTaskActivity : AppCompatActivity(), ListTaskView {
 
     private fun bindViews() {
         setSupportActionBar(toolbar)
-
-        //checkBoxList = ArrayList()
         initPresenter()
-        new_cb.setOnClickListener(taskPresenter.addNewCheckBox())
+//        new_cb.setOnClickListener(taskPresenter.addNewCheckBox())
     }
 
     private fun initPresenter() {
         taskPresenter = ListTaskPresenter()
         taskPresenter.attachView(this)
-        taskPresenter.setStartList(intent.extras)
-        taskPresenter.setAdapter(recycler_view_cb)
         recycler_view_cb.layoutManager = LinearLayoutManager(this)
+        taskPresenter.setAdapter(recycler_view_cb)
+        taskPresenter.setStartList(intent.extras)
+        /*recycler_view_cb.layoutManager = LinearLayoutManager(this)*/
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -47,26 +44,7 @@ class ListTaskActivity : AppCompatActivity(), ListTaskView {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        taskPresenter.saveClicked(/*checkBoxList*/)
+        taskPresenter.saveClicked()
         return true
-    }
-
-    override fun addCb(cbState: Boolean, cbText:String?) {
-        /*val innerLayout = View.inflate(this, R.layout.checkbox_item, null)
-        innerLayout.addedCb.isChecked = cbState
-        innerLayout.addedCbText.setText(cbText)
-        val cbAndText = Pair(innerLayout.addedCb, innerLayout.addedCbText)
-        checkBoxList!!.add(cbAndText)
-        add_list_task_layout.addView(innerLayout)
-        innerLayout.delTextView.setOnClickListener {
-            add_list_task_layout.removeView(innerLayout)
-            checkBoxList!!.remove(cbAndText)
-        }*/
-    }
-
-    override fun fillStart(cbList: List<CheckboxTaskListItem>) {
-        for (item in cbList) {
-            addCb(item.isCbState, item.cbText)
-        }
     }
 }

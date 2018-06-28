@@ -1,40 +1,25 @@
 package com.milnest.tasklist.interactor
 
-import android.os.AsyncTask
+import com.google.gson.GsonBuilder
 import com.milnest.tasklist.App
-import com.milnest.tasklist.other.utils.observer.Observable
-import com.milnest.tasklist.other.utils.observer.Observer
+import com.milnest.tasklist.R
+import com.milnest.tasklist.data.web.TranslateData
+import com.milnest.tasklist.data.web.YANDEX_API
+import io.reactivex.disposables.Disposable
 
+class TranslateInteractor{
+    val TRANSLATE_FAIL = App.context.resources.getString(R.string.translate_fail)
+    private val gson = GsonBuilder().create()
 
-class TranslateInteractor : Observable, AsyncTask<String, Void, Array<out String>>(){
+    private var d: Disposable? = null
 
-    var observer : Observer? = null
-    override fun registerObserver(o: Observer) {
-        observer = o
+    fun run(title: String, text: String, transDirection: String, function: (TranslateData, Throwable?) -> Unit)  {
+       val operation = YANDEX_API.translate("trnsl.1.1.20180420T121109Z.b002d3187929b557" +
+                 ".b397db53cb8218077027dca1b19ad897ee594788", arrayListOf(title,text), transDirection)
+        d = operation.subscribe(function)
     }
 
-    override fun removeObserver() {
-        observer = null
-    }
-
-    override fun notifyObservers(title : String, text: String) {
-        observer!!.update(title, text)
-    }
-
-    override fun doInBackground(vararg toTranslate: String): Array<out String>  {
-        var translatedTitle = toTranslate[0]
-        var translatedText  = toTranslate[1]
-        return try {
-            if (toTranslate[0] != "") translatedTitle = App.translator.translate("ru-en", toTranslate[0])
-            if (toTranslate[1] != "") translatedText = App.translator.translate("ru-en", toTranslate[1])
-            arrayOf(translatedTitle, translatedText)
-        } catch (ex: Exception) {
-            toTranslate
-        }
-    }
-
-    override fun onPostExecute(data: Array<out String>) {
-        super.onPostExecute(data)
-        notifyObservers(data[0], data[1])
+    fun dispose(){
+        d?.dispose()
     }
 }

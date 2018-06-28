@@ -9,18 +9,19 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
+import com.milnest.tasklist.App
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.CheckboxTaskListItem
 
 class ListTaskAdapter(val cbClickListener: CbClickListener):
-        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        RecyclerView.Adapter<RecyclerView.ViewHolder?>() {
 
     val CHECKBOX_ITEM_TYPE = 0
     val ADD_ITEM_TYPE = 1
     private var onBind : Boolean = true
 
     private lateinit var itemsList: MutableList<*/*CheckboxTaskListItem*/>
-    private val createCb = "Новый пункт"
+    private val createCb = App.context.resources.getString(R.string.new_cb)
     private var curRecyclerView:RecyclerView? = null
 
     fun setData(data : MutableList<CheckboxTaskListItem>){
@@ -29,18 +30,17 @@ class ListTaskAdapter(val cbClickListener: CbClickListener):
         //onCreateViewHolder(,1)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
 
         return when (viewType){
             CHECKBOX_ITEM_TYPE -> {
                 CbHolder(LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
                         parent, false))
             }
-            ADD_ITEM_TYPE -> {
+            else /*ADD_ITEM_TYPE*/ -> {
                 AddHolder(LayoutInflater.from(parent.context).inflate(R.layout.add_new_cb,
                         parent, false))
             }
-            else -> null
         }
 
         /*val v: View = LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
@@ -48,7 +48,7 @@ class ListTaskAdapter(val cbClickListener: CbClickListener):
         return CbHolder(v)*/
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         onBind = true
         if (holder is CbHolder) {
             val cbItem = itemsList[position]

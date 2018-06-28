@@ -1,7 +1,12 @@
 package com.milnest.tasklist.data.web
 
+import com.google.gson.annotations.SerializedName
+
 class TranslateData {
-    var code: Int = 0
-    var lang: String? = null
-    var text: ArrayList<String>? = null
+    @SerializedName("code")
+    var code: Int? = -1
+    @SerializedName("lang")
+    var lang: String? = ""
+    @SerializedName("text")
+    var text: List<String>? = null
 }

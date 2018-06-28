@@ -40,7 +40,8 @@
                 android:hint="@string/task_title_hint"
                 android:inputType="textPersonName"
                 android:maxLines="2"
-                android:textColorHint="@color/black" />
+                android:textColorHint="@color/black"
+                />
 
             <EditText
                 android:id="@+id/taskText"

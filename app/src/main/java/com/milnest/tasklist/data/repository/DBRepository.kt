@@ -107,7 +107,7 @@ object DBRepository {
 
     fun searchDynamicTask(data: String): MutableList<Task> {
         val cursor = db.rawQuery("SELECT * FROM task_table " +
-                "WHERE name OR content LIKE '%$data%'", null)
+                "WHERE name LIKE '%$data%' OR content LIKE '%$data%'", null)
         val list = cursorToList(cursor)
         cursor.close()
         return list

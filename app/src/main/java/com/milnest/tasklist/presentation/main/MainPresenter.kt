@@ -2,6 +2,7 @@ package com.milnest.tasklist.presentation.main
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.support.v7.view.ActionMode
@@ -17,6 +18,7 @@ import com.milnest.tasklist.other.utils.PhotoInteractor
 import com.milnest.tasklist.presentation.list.ListTaskActivity
 import com.milnest.tasklist.presentation.text.TextTaskTaskActivity
 import com.milnest.tasklist.data.repository.DBRepository
+import io.reactivex.Observable
 import java.io.File
 import java.lang.ref.WeakReference
 
@@ -53,14 +55,29 @@ class MainPresenter {
 
                 GALLERY_RESULT -> {
                     try {
-                        val img = MediaStore.Images.Media.getBitmap(App.context.contentResolver,
+                        Observable.just(result.data!!.data)
+                                .map { imgUri: Uri -> MediaStore.Images.Media.getBitmap(
+                                        App.context.contentResolver, imgUri) }
+                                .map { img: Bitmap -> PhotoInteractor.saveImageToFile(img) }
+                                .map { imgFile: File ->  MediaStore.Images.Media.insertImage(
+                                        App.context.contentResolver, imgFile.canonicalPath,
+                                        imgFile.name, imgFile.name)
+                                    return@map imgFile.canonicalPath}
+                                .map { filePath: String -> (DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, filePath))}
+                                .subscribe{_ -> adapter.setData(DBRepository.getAllTasks())}
+
+
+
+                        //#####################
+                        /*val img = MediaStore.Images.Media.getBitmap(App.context.contentResolver,
                                 result.data!!.data)
                         //Костыль
+
                         val file = PhotoInteractor.saveImageToFile(img)
                         MediaStore.Images.Media.insertImage(App.context.contentResolver,
                                 file.canonicalPath, file.name, file.name)
                         DBRepository.addTask("", Task.TYPE_ITEM_IMAGE, file.canonicalPath)
-                        adapter.setData(DBRepository.getAllTasks())
+                        adapter.setData(DBRepository.getAllTasks())*/
                     } catch (ex: Exception) {
                         notifToActivity(R.string.no_external)
                     }

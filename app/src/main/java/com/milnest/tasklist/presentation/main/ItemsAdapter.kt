@@ -1,6 +1,7 @@
 package com.milnest.tasklist.presentation.main
 
 import android.support.v7.widget.RecyclerView
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,7 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder> = ArrayList()
     private var mItems: MutableList<taskWithState>? = ArrayList()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v: View
 
         when (viewType) {
@@ -33,24 +34,21 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
                 v = LayoutInflater.from(parent.context).inflate(R.layout.text_task_list_item,
                         parent, false)
                 tempViewHolder = TextItemHolder(v)
-                tempViewHolder as TextItemHolder
-                return tempViewHolder
+                return tempViewHolder as TextItemHolder
             }
             Task.TYPE_ITEM_IMAGE -> {
                 v = LayoutInflater.from(parent.context).inflate(R.layout.img_task_list_item,
                         parent, false)
                 tempViewHolder = ImgItemHolder(v)
-                tempViewHolder as ImgItemHolder
-                return tempViewHolder
+                return tempViewHolder as ImgItemHolder
             }
-            Task.TYPE_ITEM_LIST -> {
+            /*Task.TYPE_ITEM_LIST*/ else -> {
                 v = LayoutInflater.from(parent.context).inflate(
                         R.layout.list_of_checkboxes_task_list_item, parent, false)
                 tempViewHolder = CheckboxListItemHolder(v)
-                tempViewHolder as CheckboxListItemHolder
-                return tempViewHolder
+                return tempViewHolder as CheckboxListItemHolder
             }
-            else -> return null
+            //else ->
         }
     }
 
@@ -85,13 +83,17 @@ class ItemsAdapter(private val iClickListener: IClickListener) :
                     }
                     cb.isChecked = item.isCbState
                     cb.isClickable = false
-                    cb.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    layoutParams.setMargins(3, 0, 6, 0)
+                    layoutParams.gravity = Gravity.CENTER
+                    cb.layoutParams = layoutParams
                     val cbText = TextView(layout.context)
-                    cbText.setPadding(0, 0, 0, 10)
                     cbText.text = item.cbText
                     cbText.setTextColor(App.context.resources
-                            .getColor(R.color.lum_red))
-                    cbText.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                            .getColor(R.color.dark_gray))
+                    val textParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    textParams.gravity = Gravity.CENTER
+                    cbText.layoutParams = textParams
                     cbText.isClickable = false
                     val innerLayout = LinearLayout(layout.context)
                     innerLayout.addView(cb)

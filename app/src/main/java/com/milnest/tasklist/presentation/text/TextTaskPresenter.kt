@@ -2,22 +2,13 @@ package com.milnest.tasklist.presentation.text
 
 import android.content.Intent
 import android.os.Bundle
-import com.google.gson.GsonBuilder
 import com.milnest.tasklist.ID
 import com.milnest.tasklist.R
 import com.milnest.tasklist.data.repository.DBRepository
-import com.milnest.tasklist.data.web.APIService
-import com.milnest.tasklist.data.web.TranslateData
 import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.interactor.TranslateInteractor
 import com.milnest.tasklist.other.utils.observer.Observer
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.ref.WeakReference
-import java.net.URLEncoder
 
 class TextTaskPresenter : Observer {
     private var task = Task(Task.TYPE_ITEM_TEXT)
@@ -51,63 +42,26 @@ class TextTaskPresenter : Observer {
     }
 
     fun translationClicked(title : String, text:String) {
-        method(title, "ru-en")
-        /*translateInteractor = TranslateInteractor()
-        if (translateInteractor?.observer == null) {
-            translateInteractor?.registerObserver(this)
+        translateInteractor = TranslateInteractor()
+        translateInteractor?.run(title, text, "ru-en") { value, error ->
+            if (error != null) {
+                value.text?.get(0)
+                value.text?.get(1)
+            }
+            else{
+                taskView.get()?.showToast(R.string.translate_fail)
+            }
         }
-        translateInteractor?.execute(title, text)*/
     }
 
-    fun method(input: String, transDirection: String){
-        val gson = GsonBuilder().create()
-        val retrofit = Retrofit.Builder()
-                .baseUrl("https://translate.yandex.net")
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build()
-
-        val mapJson = HashMap<String, String>()
-        mapJson.put("key", "trnsl.1.1.20180420T121109Z.b002d3187929b557" +
-                ".b397db53cb8218077027dca1b19ad897ee594788")
-        mapJson.put("text", input)
-        mapJson.put("lang", transDirection)
-
-        val service = retrofit.create<APIService>(APIService::class.java)
-       /* val operation = service.translate("trnsl.1.1.20180420T121109Z.b002d3187929b557" +
-                ".b397db53cb8218077027dca1b19ad897ee594788", URLEncoder.encode(input, "UTF-8"), transDirection)*/
-        val operation = service.translate(mapJson)
-        /*operation.enqueue(object : Callback<TranslateData> {
-            override fun onFailure(call: Call<TranslateData>?, t: Throwable?) {
-                taskView.get()?.setText(t!!.message, t.message)
-            }
-
-            override fun onResponse(call: Call<TranslateData>?, response: Response<TranslateData>?) {
-                taskView.get()?.setText(response!!.body()!!.text!!.get(0), response.body()!!.text!!.get(0))
-            }
-
-        })*/
-        operation.enqueue(object : Callback<Any> {
-            override fun onFailure(call: Call<Any>?, t: Throwable?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onResponse(call: Call<Any>?, response: Response<Any>?) {
-                val map = gson.fromJson(response!!.body().toString(), Map::class.java)
-                taskView.get()?.setText(map["text"].toString(), "")}
-
-        })
-    }
     override fun update(title: String, text: String) {
-        if (task.title == title && task.data == text) {
+        if (title == translateInteractor!!.TRANSLATE_FAIL && text == translateInteractor!!.TRANSLATE_FAIL) {
             taskView.get()?.showToast(R.string.translate_fail)
         }
         else {
             taskView.get()?.setText(title, text)
             taskView.get()?.showToast(R.string.translate_completed)
         }
-
-        translateInteractor?.removeObserver()
-        translateInteractor = null
     }
 
     fun attachView(taskView: TextTaskView) {

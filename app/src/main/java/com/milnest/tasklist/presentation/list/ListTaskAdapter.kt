@@ -34,16 +34,16 @@ class ListTaskAdapter(val cbClickListener: CbClickListener):
 
         return when (viewType){
             CHECKBOX_ITEM_TYPE -> {
-                CbHolder(LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
+                CbHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_list_cb,
                         parent, false))
             }
             else /*ADD_ITEM_TYPE*/ -> {
-                AddHolder(LayoutInflater.from(parent.context).inflate(R.layout.add_new_cb,
+                AddHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_list_add_cb,
                         parent, false))
             }
         }
 
-        /*val v: View = LayoutInflater.from(parent.context).inflate(R.layout.checkbox_item,
+        /*val v: View = LayoutInflater.from(parent.context).inflate(R.layout.item_list_cb,
                 parent, false)
         return CbHolder(v)*/
     }

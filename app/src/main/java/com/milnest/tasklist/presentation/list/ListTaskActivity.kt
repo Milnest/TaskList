@@ -10,7 +10,7 @@ import android.view.View
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.CheckboxTaskListItem
 import kotlinx.android.synthetic.main.activity_list_task.*
-import kotlinx.android.synthetic.main.checkbox_item.view.*
+import kotlinx.android.synthetic.main.item_list_cb.view.*
 import kotlinx.android.synthetic.main.toolbar.*
 import java.util.*
 

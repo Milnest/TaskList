@@ -1,29 +1,24 @@
 package com.milnest.tasklist.presentation.main
 
-import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ImageView
+import android.widget.TextView
 import com.milnest.tasklist.R
 import com.milnest.tasklist.entities.Task
 import com.milnest.tasklist.other.utils.JsonAdapter
 import com.squareup.picasso.Picasso
 import java.io.File
 
-/**
- * Created by t-yar on 17.04.2018.
- */
-
-open class ItemsAdapter(private val iClickListener: IClickListener) :
-        RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+class ItemsAdapterGrid(private val iClickListener: IClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var tempViewHolder: RecyclerView.ViewHolder? = null
     private val mViewHolderList: MutableList<RecyclerView.ViewHolder> = java.util.ArrayList()
     private var mItems: MutableList<taskWithState>? = ArrayList()
-    //override val ADAPTER_TYPE = ADAPTER_TYPE_LINEAR
-    private val LIST_SIZE = 5
+    //override val ADAPTER_TYPE = ADAPTER_TYPE_GRID
+    private val LIST_SIZE = 4
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v: View
@@ -41,13 +36,13 @@ open class ItemsAdapter(private val iClickListener: IClickListener) :
                 tempViewHolder = ImgItemHolder(v)
                 return tempViewHolder as ImgItemHolder
             }
-            /*Task.TYPE_ITEM_LIST*/ else -> {
-                v = LayoutInflater.from(parent.context).inflate(
-                        R.layout.item_main_cblist, parent, false)
-                tempViewHolder = CheckboxListItemHolder(v)
-                return tempViewHolder as CheckboxListItemHolder
-            }
-            //else ->
+        /*Task.TYPE_ITEM_LIST*/ else -> {
+            v = LayoutInflater.from(parent.context).inflate(
+                    R.layout.item_main_cblist, parent, false)
+            tempViewHolder = CheckboxListItemHolder(v)
+            return tempViewHolder as CheckboxListItemHolder
+        }
+        //else ->
         }
     }
 
@@ -77,10 +72,10 @@ open class ItemsAdapter(private val iClickListener: IClickListener) :
                 val recView = cbListItemHolder.cbRecyclerView
                 recView.layoutManager = LinearLayoutManager(holder.itemView.context)
                 val listOfCb = JsonAdapter.fromJson(taskListItem.task.data)
-                if (listOfCb.size > LIST_SIZE){
+                if (listOfCb.size > LIST_SIZE) {
 //                    listView.adapter = CbAdapterMain(listOfCb.subList(0, 4).toMutableList())
                     recView.adapter = CbAdapterMainRecycler(listOfCb.subList(0, 4))
-                }else{
+                } else {
                     recView.adapter = CbAdapterMainRecycler(listOfCb)
 //                    listView.adapter = CbAdapterMain(listOfCb.toMutableList())
                 }
@@ -126,11 +121,10 @@ open class ItemsAdapter(private val iClickListener: IClickListener) :
     }
 
 
-    open inner class TaskItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+    open inner class TaskItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         init {
-            val cardView = itemView.findViewById<CardView>(R.id.card_view)
-            cardView.setOnClickListener { iClickListener.onItemClick(layoutPosition) }
-            cardView.setOnLongClickListener { iClickListener.onItemLongClick(layoutPosition) }
+            itemView.setOnClickListener { iClickListener.onItemClick(layoutPosition) }
+            itemView.setOnLongClickListener { iClickListener.onItemLongClick(layoutPosition) }
         }
     }
 
@@ -145,9 +139,6 @@ open class ItemsAdapter(private val iClickListener: IClickListener) :
     }
 
     inner class CheckboxListItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        /*internal var cbListLayout: LinearLayout = itemView.findViewById<View>(R.id.layout_to_add)
-                as LinearLayout*/
-        /*internal var cbListView : ListView = itemView.findViewById(R.id.cb_list_main)*/
         internal var  cbRecyclerView : RecyclerView = itemView.findViewById(R.id.recycler_view_cb)
         init {
             cbRecyclerView.setOnTouchListener { _, _ -> false }
@@ -157,17 +148,17 @@ open class ItemsAdapter(private val iClickListener: IClickListener) :
     }
 
     //TODO:?????
-    open fun addSelection(position: Int) {
+    fun addSelection(position: Int) {
         var holderToSelect: RecyclerView.ViewHolder? = null
-        for (viewHolder in mViewHolderList){
-            if (viewHolder.adapterPosition == position) holderToSelect=viewHolder
+        for (viewHolder in mViewHolderList) {
+            if (viewHolder.adapterPosition == position) holderToSelect = viewHolder
         }
         holderToSelect?.itemView?.setBackgroundResource(R.color.black)
         mItems!!.get(position).state = true
     }
 
-    open fun removeSelection() {
-        for (item in mItems!!){
+    fun removeSelection() {
+        for (item in mItems!!) {
             item.state = false
         }
         for (viewHolder in mViewHolderList) {
@@ -177,9 +168,9 @@ open class ItemsAdapter(private val iClickListener: IClickListener) :
 
     inner class taskWithState(var task: Task, var state: Boolean)
 
-    open fun setData(data : List<Task>){
+    fun setData(data: List<Task>) {
         mItems!!.clear()
-        for (item in data){
+        for (item in data) {
             mItems!!.add(taskWithState(item, false))
         }
 

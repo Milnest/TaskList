@@ -6,7 +6,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.*
 
-object PhotoInteractor {
+object ImgUtil {
     fun createFilePath() : File {
         val dateString = Date()
         return File(Environment.getExternalStorageDirectory(), dateString.toString())

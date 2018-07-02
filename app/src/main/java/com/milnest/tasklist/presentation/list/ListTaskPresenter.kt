@@ -24,6 +24,9 @@ class ListTaskPresenter {
     }
 
     fun saveClicked() {
+        for (item in itemsList){
+            if (item.cbText == "") itemsList.remove(item)
+        }
         task.data = JsonAdapter.toJson(itemsList)
         DBRepository.saveTask(task)
         taskView.get()?.finish()

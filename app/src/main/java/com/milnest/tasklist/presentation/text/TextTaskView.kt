@@ -1,9 +1,8 @@
-package com.milnest.tasklist.presentation.textScreen
+package com.milnest.tasklist.presentation.text
 
 import android.content.Intent
 
-interface TextActInterface {
-    fun saveText(data : Intent)
+interface TextTaskView {
     fun setText(title: String?, text: String?)
     fun startShareAct(shareIntent: Intent)
     fun showToast(toShow : Int)

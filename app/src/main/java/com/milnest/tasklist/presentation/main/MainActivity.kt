@@ -1,4 +1,4 @@
-package com.milnest.tasklist.presentation.mainScreen
+package com.milnest.tasklist.presentation.main
 
 import android.app.SearchManager
 import android.content.Context
@@ -12,20 +12,21 @@ import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import com.milnest.tasklist.R
-import com.milnest.tasklist.IntentData
+import com.milnest.tasklist.*
 import com.milnest.tasklist.entities.ResultOfActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
 
 
-class MainActivity : AppCompatActivity(), PresenterInterface {
+class MainActivity : AppCompatActivity(), MainView {
     override var mActionMode: android.support.v7.view.ActionMode? = null
-    private val mGridManager = GridLayoutManager(this, 2)
-    private val mLinearLayoutManager = LinearLayoutManager(this)
+    //private val mGridManager = GridLayoutManager(this, 2)
+    override val mLinearLayoutManager = LinearLayoutManager(this)
+    override val mGridLayoutManager = GridLayoutManager(this, 2)
     private lateinit var searchView: SearchView
-    private val presenter = Presenter()
-    private lateinit var dialog : AlertDialog
+    private val presenter = MainPresenter()
+    private lateinit var dialog: AlertDialog
+    private var splitMenuItem: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,21 +55,21 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
         add_task_photo.setOnClickListener(presenter.addImgTask())
     }
 
+    //TODO: в презентер
+    fun openGallery() {
+        val photoPickerIntent = Intent(Intent.ACTION_PICK)
+        photoPickerIntent.type = "image/*"
+        createTaskActivity(photoPickerIntent, GALLERY_RESULT)
+    }
+
     override fun showDialog() {
         if (!dialog.isShowing) {
             dialog.show()
-            //presenter.setUpDialogStyle(dialog)
         }
     }
 
     override fun finishActionMode() {
         mActionMode!!.finish()
-    }
-
-    fun openGallery() {
-        val photoPickerIntent = Intent(Intent.ACTION_PICK)
-        photoPickerIntent.type = "image/*"
-        createTaskActivity(photoPickerIntent, IntentData.GALLERY_RESULT)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -83,19 +84,26 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_split -> if (recyclerView.layoutManager === mLinearLayoutManager) {
-                recyclerView.layoutManager = mGridManager
+            R.id.action_split -> /*if (recyclerView.layoutManager === mLinearLayoutManager) {
+                //recyclerView.layoutManager = mGridManager
+                recyclerView.adapter
                 item.setIcon(R.drawable.ic_linear_split)
             } else {
-                recyclerView.layoutManager = mLinearLayoutManager
+                //recyclerView.layoutManager = mLinearLayoutManager
                 item.setIcon(R.drawable.ic_tasks_column_split)
+            }*/
+                //recyclerView.layoutManager = mGridManager
+            {
+                splitMenuItem = item
+                presenter.setAdapter(recyclerView)
             }
+
         }
         return true
     }
 
     override fun startPhotoActivity(cameraIntent: Intent) {
-        startActivityForResult(cameraIntent, IntentData.CAMERA_RESULT)
+        startActivityForResult(cameraIntent, CAMERA_RESULT)
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -122,7 +130,7 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun startTaskActivity(activityClass: Class<*>?, itemId: Int, actResType: Int) {
         val intentChange = Intent(this, activityClass)
-        intentChange.putExtra(/*"id"*/IntentData.ID, itemId)
+        intentChange.putExtra(ID, itemId)
         startActivityForResult(intentChange, actResType)
     }
 
@@ -132,6 +140,10 @@ class MainActivity : AppCompatActivity(), PresenterInterface {
 
     override fun createTaskActivity(taskType: Int, taskClass: Class<*>) {
         val textIntent = Intent(this, taskClass)
-        startActivityForResult(textIntent, taskType)
+        startActivity(textIntent)
+    }
+
+    override fun setSplitIcon(iconResource: Int) {
+        splitMenuItem?.setIcon(iconResource)
     }
 }

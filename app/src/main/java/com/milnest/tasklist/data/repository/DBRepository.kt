@@ -5,7 +5,7 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.milnest.tasklist.app
+import com.milnest.tasklist.App
 import com.milnest.tasklist.data.db.TaskDatabaseHelper
 import com.milnest.tasklist.entities.Task
 
@@ -14,7 +14,7 @@ import com.milnest.tasklist.entities.Task
  */
 
 object DBRepository {
-    private var db: SQLiteDatabase = TaskDatabaseHelper(app.context).writableDatabase
+    private var db: SQLiteDatabase = TaskDatabaseHelper(App.context).writableDatabase
 
     fun getAllTasks(): MutableList<Task> {
         val cursor = db.query(TaskDatabaseHelper.TABLE, null,
@@ -60,24 +60,27 @@ object DBRepository {
     }
 
     fun getTaskById(id: Int): Task? {
-        val cursor = db.query(TaskDatabaseHelper.TABLE, null,
-                TaskDatabaseHelper.COLUMN_ID + "=$id", null, null, null, null)
+        try {
+            val cursor = db.query(TaskDatabaseHelper.TABLE, null,
+                    TaskDatabaseHelper.COLUMN_ID + "=$id", null, null, null, null)
 
-        val indexName = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_NAME)
-        val indexType = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_TYPE)
-        val indexContent = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_CONTENT)
+            val indexName = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_NAME)
+            val indexType = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_TYPE)
+            val indexContent = cursor.getColumnIndex(TaskDatabaseHelper.COLUMN_CONTENT)
 
-        var name = ""
-        var content = ""
-        var type = -1
-        if (cursor.moveToNext()) {
-            name = cursor.getString(indexName)
-            content = cursor.getString(indexContent)
-            type = cursor.getInt(indexType)
+            var name = ""
+            var content = ""
+            var type = -1
+            if (cursor.moveToNext()) {
+                name = cursor.getString(indexName)
+                content = cursor.getString(indexContent)
+                type = cursor.getInt(indexType)
+            }
+            cursor.close()
+            return Task(id, name, type, content)
+        } catch (ex : SQLException){
+            return null
         }
-        cursor.close()
-
-        return Task(id, name, type, content)
     }
 
     fun updateTask(id: Int, name: String, type: Int, content: String) {
@@ -91,6 +94,12 @@ object DBRepository {
                 arrayOf(id.toString())).toLong()
     }
 
+    fun saveTask(task: Task) {
+        if (getTaskById(task.id) != null && task.id != -1)
+            updateTask(task.id, task.title, task.type, task.data)
+        else addTask(task.title, task.type, task.data)
+    }
+
     fun deleteTask(id: Long) {
         db.delete(TaskDatabaseHelper.TABLE, TaskDatabaseHelper.COLUMN_ID +
                 " =?", arrayOf(id.toString()))
@@ -98,8 +107,10 @@ object DBRepository {
 
     fun searchDynamicTask(data: String): MutableList<Task> {
         val cursor = db.rawQuery("SELECT * FROM task_table " +
-                "WHERE name OR content LIKE '%$data%'", null)
-        return cursorToList(cursor)
+                "WHERE name LIKE '%$data%' OR content LIKE '%$data%'", null)
+        val list = cursorToList(cursor)
+        cursor.close()
+        return list
     }
 }
 
